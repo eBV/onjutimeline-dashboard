@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vercel --version)",
+      "Bash(vercel --prod --name ohnahji-timeline)",
+      "Bash(vercel link:*)",
+      "Bash(vercel --prod --scope grownmanish-5519s-projects)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(./node_modules/.bin/tsc -b --noEmit)",
+      "Bash(node_modules/.bin/vite build:*)",
+      "Bash(npm install:*)",
+      "Bash(sips -g pixelWidth -g pixelHeight /Users/eBV/Desktop/onjutimeline/public/ji.png)",
+      "Bash(sips -z 512 512 /Users/eBV/Desktop/onjutimeline/public/ji.png --out /Users/eBV/Desktop/onjutimeline/public/icon-512.png)",
+      "Bash(sips -z 192 192 /Users/eBV/Desktop/onjutimeline/public/ji.png --out /Users/eBV/Desktop/onjutimeline/public/icon-192.png)",
+      "Bash(sips -z 180 180 /Users/eBV/Desktop/onjutimeline/public/ji.png --out /Users/eBV/Desktop/onjutimeline/public/apple-touch-icon.png)",
+      "Bash(sips -z 32 32 /Users/eBV/Desktop/onjutimeline/public/ji.png --out /Users/eBV/Desktop/onjutimeline/public/favicon-32.png)",
+      "Bash(sips -z 16 16 /Users/eBV/Desktop/onjutimeline/public/ji.png --out /Users/eBV/Desktop/onjutimeline/public/favicon-16.png)",
+      "Bash(convert --version)",
+      "Bash(node -e \"const {createCanvas, loadImage} = require\\(''canvas''\\); console.log\\(''canvas available''\\)\")",
+      "Bash(python3 -c \"from PIL import Image; print\\(''PIL available''\\)\")",
+      "Bash(python3 -c \"import struct, zlib; print\\(''ok''\\)\")",
+      "Bash(python3:*)",
+      "Bash(gh auth:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
