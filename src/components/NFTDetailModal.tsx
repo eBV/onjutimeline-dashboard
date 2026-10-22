@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNFTMetadata } from '../hooks/useNFT'
-import { CONTRACT_ADDRESS, getNFTImage } from '../lib/constants'
+import { CONTRACT_ADDRESS, IPFS_CID_GENESIS } from '../lib/constants'
+import ResilientImage from './ResilientImage'
 
 interface NFTDetailModalProps {
   tokenId: number | null
@@ -50,12 +51,14 @@ const NFTDetailModal = ({ tokenId, onClose }: NFTDetailModalProps) => {
               exit={{ scale: 0.9, x: -20, opacity: 0 }}
               className="w-full md:w-1/2 h-64 md:h-auto md:aspect-square relative rounded-[2.5rem] overflow-hidden shadow-[20px_20px_0px_0px_rgba(0,0,0,1)]"
             >
-              <img
-                crossOrigin="anonymous"
-                src={getNFTImage(tokenId)}
+              <ResilientImage
+                cid={IPFS_CID_GENESIS}
+                path={`${tokenId}.png`}
                 className="w-full h-full object-cover"
                 alt={`Ohnahji #${tokenId}`}
-                onLoad={(e) => sampleColor(e.currentTarget)}
+                placeholderText={`OHNAHJI #${tokenId}`}
+                cors
+                onArtLoad={(img) => sampleColor(img)}
               />
               <button
                 onClick={onClose}

@@ -14,7 +14,11 @@ interface UseSlideScrollResult {
 }
 
 const SCROLL_COOLDOWN = 1000
-const PROGRAMMATIC_SCROLL_DURATION = 600
+// Safety ceiling only: the lock is normally released by handleScroll as soon
+// as the container reaches its target. A fixed 600ms lock was too short for
+// multi-slide smooth scrolls, so the scroll handler hijacked navigation
+// mid-animation and deep links (e.g. /mint) never settled on their slide.
+const PROGRAMMATIC_SCROLL_TIMEOUT = 4000
 
 export function useSlideScroll({
   slidePaths,
@@ -26,17 +30,29 @@ export function useSlideScroll({
   const scrollProgress = useMotionValue(0)
   const lastScrollTime = useRef(0)
   const isProgrammaticScroll = useRef(false)
+  const programmaticTargetRef = useRef<number | null>(null)
   const programmaticScrollTimeoutRef = useRef<number | null>(null)
 
-  const lockProgrammaticScroll = useCallback(() => {
+  const unlockProgrammaticScroll = useCallback(() => {
+    isProgrammaticScroll.current = false
+    programmaticTargetRef.current = null
+    if (programmaticScrollTimeoutRef.current !== null) {
+      window.clearTimeout(programmaticScrollTimeoutRef.current)
+      programmaticScrollTimeoutRef.current = null
+    }
+  }, [])
+
+  const lockProgrammaticScroll = useCallback((targetLeft?: number) => {
     isProgrammaticScroll.current = true
+    programmaticTargetRef.current = targetLeft ?? null
     if (programmaticScrollTimeoutRef.current !== null) {
       window.clearTimeout(programmaticScrollTimeoutRef.current)
     }
     programmaticScrollTimeoutRef.current = window.setTimeout(() => {
       isProgrammaticScroll.current = false
+      programmaticTargetRef.current = null
       programmaticScrollTimeoutRef.current = null
-    }, PROGRAMMATIC_SCROLL_DURATION)
+    }, PROGRAMMATIC_SCROLL_TIMEOUT)
   }, [])
 
   const navigateToSlide = useCallback((index: number) => {
@@ -50,7 +66,14 @@ export function useSlideScroll({
     const { scrollLeft, scrollWidth, clientWidth } = containerRef.current
     scrollProgress.set(scrollWidth - clientWidth > 0 ? scrollLeft / (scrollWidth - clientWidth) : 0)
 
-    if (isProgrammaticScroll.current) return
+    if (isProgrammaticScroll.current) {
+      // Release the lock once the smooth scroll lands on its target slide.
+      const target = programmaticTargetRef.current
+      if (target !== null && Math.abs(scrollLeft - target) < 10) {
+        unlockProgrammaticScroll()
+      }
+      return
+    }
 
     if (clientWidth > 0) {
       const newSlideIndex = Math.round(scrollLeft / clientWidth)
@@ -58,26 +81,30 @@ export function useSlideScroll({
         navigate(slidePaths[newSlideIndex], { replace: true })
       }
     }
-  }, [currentSlide, navigate, scrollProgress, slidePaths])
+  }, [currentSlide, navigate, scrollProgress, slidePaths, unlockProgrammaticScroll])
 
   const scrollToSlide = useCallback((index: number) => {
     if (!containerRef.current) return
     const { scrollLeft, clientWidth } = containerRef.current
     const targetLeft = clientWidth * index
     if (Math.abs(scrollLeft - targetLeft) < 10) {
-      isProgrammaticScroll.current = false
-      if (programmaticScrollTimeoutRef.current !== null) {
-        window.clearTimeout(programmaticScrollTimeoutRef.current)
-        programmaticScrollTimeoutRef.current = null
-      }
+      unlockProgrammaticScroll()
       return
     }
-    lockProgrammaticScroll()
+    lockProgrammaticScroll(targetLeft)
     containerRef.current.scrollTo({ left: targetLeft, behavior: 'smooth' })
-  }, [lockProgrammaticScroll])
+  }, [lockProgrammaticScroll, unlockProgrammaticScroll])
 
   useEffect(() => {
     scrollToSlide(currentSlide)
+    // On a cold deep link (e.g. /mint) the first scroll attempt can fire
+    // while the Suspense fallback is still mounted, when the container is
+    // only one slide wide and the target clamps to 0. Retry briefly so the
+    // scroll lands once the lazy slides have mounted.
+    const retryTimers = [350, 900, 1800].map((delay) =>
+      window.setTimeout(() => scrollToSlide(currentSlide), delay),
+    )
+    return () => retryTimers.forEach((t) => window.clearTimeout(t))
   }, [currentSlide, scrollToSlide])
 
   useEffect(() => {

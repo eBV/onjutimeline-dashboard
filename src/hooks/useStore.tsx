@@ -1,17 +1,10 @@
 import React, { createContext, useContext, useState } from 'react'
-import { createThirdwebClient, defineChain } from 'thirdweb'
-import { ethereum } from 'thirdweb/chains'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 
 import { CONTRACT_ADDRESS } from '../lib/constants'
 
-// Constants
-const CLIENT_ID = '09797204fc3d09a0636257d079ebcb80'
-
 // Types
 interface StoreContextType {
-  client: any
-  chain: any
   totalSupply: number
   currentSlide: number
   isGalleryOpen: boolean
@@ -21,10 +14,6 @@ interface StoreContextType {
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined)
-
-// Thirdweb Client
-const client = createThirdwebClient({ clientId: CLIENT_ID })
-const chain = defineChain(ethereum)
 
 // Create a client
 const queryClient = new QueryClient({
@@ -77,8 +66,6 @@ const StoreInner: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const totalSupply = manualTotalSupply ?? queriedTotalSupply
 
   const value = {
-    client,
-    chain,
     totalSupply,
     currentSlide,
     isGalleryOpen,

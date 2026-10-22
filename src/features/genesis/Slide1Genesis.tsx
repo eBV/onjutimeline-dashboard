@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import NFTGallery from '../../components/NFTGallery'
+import ResilientImage from '../../components/ResilientImage'
 import { IPFS_CID_GENESIS } from '../../lib/constants'
-
-const IMAGE_BASE = `https://${IPFS_CID_GENESIS}.ipfs.dweb.link`
-const getNFTImage = (tokenId: number): string => `${IMAGE_BASE}/${tokenId}.png`
 
 interface Slide1GenesisProps {
   totalSupply: number
@@ -88,13 +86,12 @@ const Slide1Genesis = ({ totalSupply, onGalleryOpen }: Slide1GenesisProps) => {
               <div className="grid grid-cols-3 gap-[2px] bg-[#0a0a0a]">
                 {previewIds.length > 0 ? previewIds.map((id, idx) => (
                   <div key={`${id}-${idx}`} className="overflow-hidden aspect-square bg-[#0a0a0a]">
-                    <img
-                      src={getNFTImage(id)}
+                    <ResilientImage
+                      cid={IPFS_CID_GENESIS}
+                      path={`${id}.png`}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       alt=""
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://via.placeholder.com/150/FE517E/FFFFFF?text=${id}`
-                      }}
+                      placeholderText={`${id}`}
                     />
                   </div>
                 )) : (

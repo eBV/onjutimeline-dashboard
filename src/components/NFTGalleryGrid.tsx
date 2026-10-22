@@ -1,26 +1,13 @@
 import { motion } from 'framer-motion'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
-import { GATEWAYS, getNFTImage } from '../lib/constants'
+import { IPFS_CID_GENESIS } from '../lib/constants'
 import { useIsMobile } from '../hooks/use-mobile'
+import ResilientImage from './ResilientImage'
 
 interface NFTGalleryGridProps {
   tokens: number[]
   heroTokenId: number
   onSelectToken: (id: number) => void
-}
-
-const handleImageError = (
-  e: React.SyntheticEvent<HTMLImageElement, Event>,
-  id: number,
-  gatewayIndex: number
-) => {
-  const img = e.target as HTMLImageElement
-  if (gatewayIndex + 1 < GATEWAYS.length) {
-    img.src = `${GATEWAYS[gatewayIndex + 1]}/${id}.png`
-    img.dataset.gatewayIndex = (gatewayIndex + 1).toString()
-  } else {
-    img.src = `https://via.placeholder.com/400/FE517E/FFFFFF?text=OHNAHJI+%23${id}`
-  }
 }
 
 const NFTCard = ({
@@ -42,15 +29,13 @@ const NFTCard = ({
       id === heroTokenId ? 'ring-[2px] ring-ohnahji-gold z-10' : ''
     }`}
   >
-    <img
-      src={getNFTImage(id)}
+    <ResilientImage
+      cid={IPFS_CID_GENESIS}
+      path={`${id}.png`}
       alt={`Ohnahji #${id}`}
       className="w-full h-full object-cover relative z-10"
       loading="lazy"
-      data-gateway-index="0"
-      onError={(e) =>
-        handleImageError(e, id, parseInt((e.target as HTMLImageElement).dataset.gatewayIndex || '0'))
-      }
+      placeholderText={`OHNAHJI #${id}`}
     />
     <div className="absolute inset-0 bg-ohnahji-black/40 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity">
       <span className="text-white font-black text-sm font-sans">#{id}</span>

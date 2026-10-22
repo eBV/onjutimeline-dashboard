@@ -45,7 +45,12 @@ const Slide6Watch = () => {
           style={{ minHeight: '220px' }}
         >
           <iframe
-            src="https://www.youtube.com/embed/videoseries?list=PLvmAix5Xj5Hk2rYwg2T0H-eMXdDbqSMH9&rel=0"
+            // Uploads playlist of @ohnahji (channel UC2jADEyzHMKOA9KuywmKqDQ,
+            // uploads = UU + channel id minus UC). Verified live via YouTube
+            // oEmbed on 2026-10-22 ("Uploads from Ohnahji University
+            // Network"); the previous playlist PLvmAix5Xj5Hk... is deleted
+            // (oEmbed 404, player showed "This video is unavailable").
+            src="https://www.youtube.com/embed/videoseries?list=UU2jADEyzHMKOA9KuywmKqDQ&rel=0"
             className="w-full h-full"
             style={{ border: 'none', minHeight: '220px' }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

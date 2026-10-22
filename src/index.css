@@ -133,6 +133,13 @@
   ::-webkit-scrollbar-track { background: #1a1a1a; }
   ::-webkit-scrollbar-thumb { background: #FE517E; border-radius: 4px; }
   ::-webkit-scrollbar-thumb:hover { background: #F1C40F; }
+
+  /* Visible keyboard focus — brand pink ring, never removed */
+  :focus-visible {
+    outline: 2px solid #FE517E;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
 /* ─── Dashboard component classes ───────────────────────────────────────── */

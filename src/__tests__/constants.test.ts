@@ -23,15 +23,22 @@ describe('constants', () => {
     expect(cids.size).toBe(3)
   })
 
-  test('GATEWAYS has 4 entries each containing IPFS_CID_GENESIS', () => {
-    expect(GATEWAYS).toHaveLength(4)
+  test('GATEWAYS has 5 entries each containing IPFS_CID_GENESIS', () => {
+    expect(GATEWAYS).toHaveLength(5)
     for (const gateway of GATEWAYS) {
       expect(gateway).toContain(IPFS_CID_GENESIS)
     }
   })
 
   test('GATEWAYS entries are distinct URLs', () => {
-    expect(new Set(GATEWAYS).size).toBe(4)
+    expect(new Set(GATEWAYS).size).toBe(5)
+  })
+
+  test('GATEWAYS leads with pinata and excludes the dead cloudflare gateway', () => {
+    expect(GATEWAYS[0]).toContain('gateway.pinata.cloud')
+    for (const gateway of GATEWAYS) {
+      expect(gateway).not.toContain('cloudflare-ipfs.com')
+    }
   })
 
   test('getNFTImage returns a URL ending in /<id>.png', () => {

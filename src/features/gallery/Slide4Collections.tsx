@@ -1,11 +1,23 @@
 import { motion } from 'framer-motion'
+import ResilientImage from '../../components/ResilientImage'
+import { IPFS_CID_OKOLOTO } from '../../lib/constants'
 
-const artworks = [
+interface Artwork {
+  id: number
+  title: string
+  collection: string
+  image?: string
+  ipfs?: { cid: string; path: string }
+  link: string
+  accent: string
+}
+
+const artworks: Artwork[] = [
   {
     id: 1,
     title: 'Okoloto #001',
     collection: 'Okolotos',
-    image: 'https://ipfs.io/ipfs/Qmdaiju45QxWibywnWftvKQgxPy1TJxBuGEUQa4Fevv9Sf/640.jpg',
+    ipfs: { cid: IPFS_CID_OKOLOTO, path: '640.jpg' },
     link: 'https://opensea.io/collection/okoloto',
     accent: '#FE517E',
   },
@@ -13,7 +25,7 @@ const artworks = [
     id: 2,
     title: 'Okoloto #002',
     collection: 'Okolotos',
-    image: 'https://ipfs.io/ipfs/Qmdaiju45QxWibywnWftvKQgxPy1TJxBuGEUQa4Fevv9Sf/265.jpg',
+    ipfs: { cid: IPFS_CID_OKOLOTO, path: '265.jpg' },
     link: 'https://opensea.io/collection/okoloto',
     accent: '#FE517E',
   },
@@ -37,7 +49,7 @@ const artworks = [
     id: 5,
     title: 'Okoloto #003',
     collection: 'Okolotos',
-    image: 'https://ipfs.io/ipfs/Qmdaiju45QxWibywnWftvKQgxPy1TJxBuGEUQa4Fevv9Sf/1737.jpg',
+    ipfs: { cid: IPFS_CID_OKOLOTO, path: '1737.jpg' },
     link: 'https://opensea.io/collection/okoloto',
     accent: '#FE517E',
   },
@@ -53,7 +65,10 @@ const artworks = [
 
 const Slide4Collections = () => {
   return (
-    <div className="min-h-full flex flex-col justify-center py-8 gap-5">
+    // pb-14: keeps the bottom-row card labels clear of the nav dots'
+    // active tooltip, which projects 36px up from the pill below the
+    // slide area when this slide's inner scroller is at the bottom.
+    <div className="min-h-full flex flex-col justify-center pt-8 pb-14 gap-5">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
@@ -89,12 +104,23 @@ const Slide4Collections = () => {
             style={{ background: '#161616', border: '1px solid #2a2a2a' }}
           >
             <div className="aspect-square overflow-hidden bg-[#0a0a0a]">
-              <img
-                src={art.image}
-                alt={art.title}
-                loading="lazy"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
+              {art.ipfs ? (
+                <ResilientImage
+                  cid={art.ipfs.cid}
+                  path={art.ipfs.path}
+                  alt={art.title}
+                  loading="lazy"
+                  placeholderText={art.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <img
+                  src={art.image}
+                  alt={art.title}
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              )}
             </div>
             <div
               className="px-3 py-2.5 flex items-center justify-between"

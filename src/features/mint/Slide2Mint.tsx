@@ -1,21 +1,28 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ConnectButton, useActiveAccount, useSendTransaction } from 'thirdweb/react'
+import { ThirdwebProvider, ConnectButton, useActiveAccount, useSendTransaction } from 'thirdweb/react'
 import { getContract, prepareContractCall, toWei } from 'thirdweb'
+import { getThirdwebClient, getChain } from '../../lib/thirdweb'
 import { useETHPrice } from '../../hooks/useNFT'
-import { useStore } from '../../hooks/useStore'
 import { CONTRACT_ADDRESS, IPFS_CID_MINT_PLACEHOLDER } from '../../lib/constants'
+import ResilientImage from '../../components/ResilientImage'
 
-const MINT_PLACEHOLDER = `https://${IPFS_CID_MINT_PLACEHOLDER}.ipfs.dweb.link/NoRevealHolder.png`
-
-const Slide2Mint = () => {
+// Inner component holds every thirdweb hook. It must be a CHILD of
+// ThirdwebProvider: a provider does not cover hooks called by the
+// component that renders it, and this component previously called
+// useActiveAccount/useSendTransaction in its own body while returning
+// the provider, which threw "useActiveAccount must be used within
+// <ThirdwebProvider>" and crashed the whole app into the ErrorBoundary
+// (all slides mount at once in the horizontal strip).
+const Slide2MintInner = () => {
   const [quantity, setQuantity] = useState(1)
   const pricePerNFT = 0.005
   const totalPrice = quantity * pricePerNFT
   const account = useActiveAccount()
   const ethPriceQuery = useETHPrice()
   const ethPrice = ethPriceQuery.data
-  const { client, chain } = useStore()
+  const client = getThirdwebClient()
+  const chain = getChain()
 
   const contract = getContract({ client, chain, address: CONTRACT_ADDRESS })
   const { mutate: sendTransaction, isPending } = useSendTransaction()
@@ -81,10 +88,12 @@ const Slide2Mint = () => {
         >
           {/* Preview image */}
           <div className="h-44 md:h-56 overflow-hidden">
-            <img
-              src={MINT_PLACEHOLDER}
+            <ResilientImage
+              cid={IPFS_CID_MINT_PLACEHOLDER}
+              path="NoRevealHolder.png"
               className="w-full h-full object-cover"
               alt="Mint Placeholder"
+              placeholderText="OHNAHJI"
             />
           </div>
 
@@ -95,14 +104,16 @@ const Slide2Mint = () => {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  aria-label="Decrease quantity"
                   className="w-8 h-8 rounded-lg text-white font-bold text-lg flex items-center justify-center transition-colors hover:bg-white/10"
                   style={{ border: '1px solid #3a3a3a' }}
                 >
                   −
                 </button>
-                <span className="w-8 text-center font-bold text-lg text-white">{quantity}</span>
+                <span className="w-8 text-center font-bold text-lg text-white" aria-live="polite">{quantity}</span>
                 <button
                   onClick={() => setQuantity(Math.min(10, quantity + 1))}
+                  aria-label="Increase quantity"
                   className="w-8 h-8 rounded-lg text-white font-bold text-lg flex items-center justify-center transition-colors hover:bg-white/10"
                   style={{ border: '1px solid #3a3a3a' }}
                 >
@@ -154,5 +165,11 @@ const Slide2Mint = () => {
     </div>
   )
 }
+
+const Slide2Mint = () => (
+  <ThirdwebProvider>
+    <Slide2MintInner />
+  </ThirdwebProvider>
+)
 
 export default Slide2Mint
