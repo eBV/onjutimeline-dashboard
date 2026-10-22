@@ -1,13 +1,14 @@
 import { Suspense, lazy, useEffect, useCallback } from 'react'
 import { motion, useTransform } from 'framer-motion'
 import { BrowserRouter as Router, useLocation, useNavigate } from 'react-router-dom'
-import { ThirdwebProvider } from 'thirdweb/react'
 import './index.css'
 
-import { ConnectButton } from 'thirdweb/react'
 import { StoreProvider, useStore } from './hooks/useStore'
 import { useSlideScroll } from './hooks/useSlideScroll'
 import NavigationDots from './components/NavigationDots'
+
+// Code-split: keeps the ~1MB thirdweb dependency out of the entry chunk.
+const WalletConnect = lazy(() => import('./components/WalletConnect'))
 
 const Slide0Hero = lazy(() => import('./features/hero/Slide0Hero'))
 const Slide1Story = lazy(() => import('./features/story/Slide1Story'))
@@ -59,7 +60,7 @@ const SLIDE_INNER = 'h-full overflow-y-auto flex flex-col px-10 md:px-16'
 const AppContent = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { client, chain, currentSlide, setCurrentSlide, isGalleryOpen, setIsGalleryOpen, totalSupply } = useStore()
+  const { currentSlide, setCurrentSlide, isGalleryOpen, setIsGalleryOpen, totalSupply } = useStore()
 
   const { containerRef, scrollProgress } = useSlideScroll({ slidePaths: SLIDE_PATHS, currentSlide, isGalleryOpen, navigate })
   const progressWidth = useTransform(scrollProgress, [0, 1], ['0%', '100%'])
@@ -80,28 +81,19 @@ const AppContent = () => {
   const onSlideChange = useCallback((index: number) => navigate(SLIDE_PATHS[index]), [navigate])
 
   return (
-    <div className={`h-dvh w-screen flex flex-col overflow-hidden transition-colors duration-500 ${SLIDE_BG[currentSlide]}`}>
+    <div role="main" aria-label="Ohnahji timeline" className={`h-dvh w-screen flex flex-col overflow-hidden transition-colors duration-500 ${SLIDE_BG[currentSlide]}`}>
       {/* Progress bar — 1px top strip */}
       <div className="w-full h-[2px] bg-transparent z-50 flex-shrink-0">
         <motion.div className="h-full bg-ohnahji-pink" style={{ width: progressWidth }} />
       </div>
 
-      {/* Persistent wallet button — top-right, hidden when gallery is open */}
+      {/* Persistent wallet button — top-right, hidden when gallery is open.
+          Code-split so thirdweb loads async; Suspense has no fallback to avoid
+          layout shift — the button fades in via its own mount. */}
       {!isGalleryOpen && (
-        <div className="fixed top-3 right-3 z-[90]">
-          <ConnectButton
-            client={client}
-            chain={chain}
-            theme="dark"
-            connectButton={{
-              label: "CONNECT",
-              className: "!bg-transparent !text-ohnahji-pink !border !border-ohnahji-pink/40 !rounded-lg !font-bold !text-xs !px-3 !py-1.5 !h-auto hover:!bg-ohnahji-pink/10 !transition-all",
-            }}
-            detailsButton={{
-              className: "!bg-transparent !text-ohnahji-pink !border !border-ohnahji-pink/40 !rounded-lg !font-bold !text-xs !px-3 !py-1.5 !h-auto hover:!bg-ohnahji-pink/10 !transition-all",
-            }}
-          />
-        </div>
+        <Suspense fallback={null}>
+          <WalletConnect />
+        </Suspense>
       )}
 
       <div className="flex-1 relative overflow-hidden">
@@ -167,11 +159,9 @@ const AppContent = () => {
 function App() {
   return (
     <StoreProvider>
-      <ThirdwebProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </ThirdwebProvider>
+      <Router>
+        <AppContent />
+      </Router>
     </StoreProvider>
   )
 }

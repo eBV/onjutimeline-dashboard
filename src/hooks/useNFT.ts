@@ -1,9 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { IPFS_CID_METADATA } from '../lib/constants'
-
-// IPFS base URLs
-const METADATA_BASE = `https://${IPFS_CID_METADATA}.ipfs.dweb.link`
-const getNFTMetadataURL = (tokenId: number): string => `${METADATA_BASE}/${tokenId}.json`
+import { fetchIpfs } from '../lib/ipfs'
 
 /**
  * Hook to get ETH price in USD using TanStack Query
@@ -29,8 +26,9 @@ export const useNFTMetadata = (tokenId: number | null) => {
     queryKey: ['nftMetadata', tokenId],
     queryFn: async () => {
       if (tokenId === null) return null
-      const response = await fetch(getNFTMetadataURL(tokenId))
-      if (!response.ok) throw new Error('NFT metadata not found')
+      // Resilient gateway chain (was dweb.link only, which rate limits
+      // with 429): retries with backoff, then rotates gateways.
+      const response = await fetchIpfs(IPFS_CID_METADATA, `${tokenId}.json`)
       return await response.json()
     },
     enabled: tokenId !== null,

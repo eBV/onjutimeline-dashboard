@@ -7,6 +7,11 @@ interface NFTGalleryProps {
   onClose?: () => void
 }
 
+// Intentional protection: the last 30 tokens of the on-chain supply stay
+// out of the gallery until their art is revealed. The supply figure shown
+// around the site is the full on-chain totalSupply (e.g. 5,094), so the
+// searchable gallery range is honestly labelled #1 to supply minus this
+// buffer (e.g. 5,064) instead of silently disagreeing with it.
 const REVEAL_BUFFER = 30
 
 const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
@@ -20,13 +25,15 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
   const maxToken = (totalSupply || 8888) - REVEAL_BUFFER
 
   const navigateTo = useCallback((heroId: number) => {
-    const supply = totalSupply || 8888
+    // Page window stays inside the revealed range so browsing can never
+    // surface the protected tail tokens the search cap excludes.
+    const cap = Math.max(1, (totalSupply || 8888) - REVEAL_BUFFER)
     setHeroTokenId(heroId)
     const PAGE = 60
     const half = PAGE / 2
-    const start = Math.max(1, Math.min(heroId - half, supply - PAGE + 1))
+    const start = Math.max(1, Math.min(heroId - half, cap - PAGE + 1))
     const ids: number[] = []
-    for (let i = start; i <= Math.min(start + PAGE - 1, supply); i++) ids.push(i)
+    for (let i = start; i <= Math.min(start + PAGE - 1, cap); i++) ids.push(i)
     setTokens(ids)
   }, [totalSupply])
 
@@ -41,7 +48,7 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
       return
     }
     if (num > maxToken) {
-      setSearchError(`Max token is #${maxToken}`)
+      setSearchError(`#${num} is not revealed yet; revealed art runs #1 to #${maxToken}`)
       return
     }
     setSearchError('')
@@ -98,7 +105,7 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
               max={maxToken}
               value={searchInput}
               onChange={(e) => { setSearchInput(e.target.value); setSearchError('') }}
-              placeholder={`#1–${maxToken}`}
+              placeholder={`#1–${maxToken} revealed`}
               className="w-24 px-2 py-2 border-[4px] border-ohnahji-black rounded-full font-black text-xs text-center bg-ohnahji-white focus:outline-none focus:border-ohnahji-gold shadow-neo-sm"
             />
             <button
@@ -114,6 +121,9 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
             {searchError}
           </span>
         )}
+        <span className="text-ohnahji-white/50 font-bold text-[10px] tracking-wide">
+          REVEALED ART #1–{maxToken} OF {(totalSupply || 8888).toLocaleString()} MINTED; FINAL {REVEAL_BUFFER} STAY HIDDEN UNTIL REVEAL
+        </span>
       </div>
 
       {/* Grid fills remaining space */}

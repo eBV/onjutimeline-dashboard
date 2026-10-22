@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import { useStore } from '../../hooks/useStore'
 
 const StatCard = ({
@@ -29,6 +30,7 @@ const StatCard = ({
 
 const Slide0Hero = () => {
   const { totalSupply } = useStore()
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-full flex flex-col justify-center py-8 gap-4 md:gap-5">
@@ -89,22 +91,26 @@ const Slide0Hero = () => {
         <StatCard label="Status" value="HBCU" sub="Web3" />
       </motion.div>
 
-      {/* Scroll hint */}
-      <motion.div
+      {/* Scroll hint; the toggle is a real control: clicking it advances
+          to the next slide (Story), same as a dot click or ArrowRight. */}
+      <motion.button
+        type="button"
+        onClick={() => navigate('/story')}
+        aria-label="Scroll to explore: go to the Story slide"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.4 }}
-        className="flex items-center gap-3 px-1"
+        className="flex items-center gap-3 px-1 w-fit cursor-pointer group"
       >
-        <div className="w-8 h-5 rounded-full flex items-center px-1" style={{ border: '1px solid #2a2a2a' }}>
+        <div className="w-8 h-5 rounded-full flex items-center px-1 transition-colors group-hover:border-ohnahji-pink/60" style={{ border: '1px solid #2a2a2a' }}>
           <motion.div
             animate={{ x: [0, 14, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
             className="w-2 h-2 rounded-full bg-ohnahji-pink"
           />
         </div>
-        <span className="text-xs text-dash-muted font-medium tracking-widest uppercase">Scroll to Explore</span>
-      </motion.div>
+        <span className="text-xs text-dash-muted font-medium tracking-widest uppercase group-hover:text-white transition-colors">Scroll to Explore</span>
+      </motion.button>
 
       {/* Footer line */}
       <div

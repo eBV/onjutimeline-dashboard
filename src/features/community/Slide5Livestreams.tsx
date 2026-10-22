@@ -63,7 +63,12 @@ const Slide5Livestreams = () => {
           />
         ) : (
           <iframe
-            src="https://www.youtube.com/embed/videoseries?list=PLvmAix5Xj5Hk2rYwg2T0H-eMXdDbqSMH9"
+            // Channel live embed: shows the current livestream when live.
+            // The previous embed pointed at playlist PLvmAix5Xj5Hk... which
+            // no longer exists (oEmbed 404, "This video is unavailable").
+            // Channel @ohnahji = UC2jADEyzHMKOA9KuywmKqDQ (verified from
+            // the channel page and its uploads-playlist oEmbed, 2026-10-22).
+            src="https://www.youtube.com/embed/live_stream?channel=UC2jADEyzHMKOA9KuywmKqDQ"
             style={{ border: 'none' }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -79,7 +84,18 @@ const Slide5Livestreams = () => {
         style={{ borderColor: '#2a2a2a' }}
       >
         <span>{activeTab === 'twitch' ? 'twitch.tv/ohnahji' : 'youtube.com/@ohnahji/streams'}</span>
-        <span>Live from {activeTab === 'twitch' ? 'Twitch' : 'YouTube'} API</span>
+        {activeTab === 'youtube' ? (
+          <a
+            href="https://www.youtube.com/@ohnahji/streams"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="dash-btn-outline text-[11px] font-bold py-1.5 px-3.5 rounded-lg tracking-widest"
+          >
+            OPEN ON YOUTUBE ↗
+          </a>
+        ) : (
+          <span>Live from Twitch API</span>
+        )}
       </div>
     </div>
   )

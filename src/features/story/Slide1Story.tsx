@@ -47,6 +47,22 @@ const Slide1Story = () => {
         </h1>
       </motion.div>
 
+      {/* Scroll affordance: below lg the four chapters stack and the last
+          one sits below the fold of the slide's inner scroller, which
+          previously gave no hint that more content was there. */}
+      <div className="lg:hidden flex items-center gap-2 -mt-2" aria-hidden="true">
+        <motion.span
+          animate={{ y: [0, 4, 0] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+          className="text-ohnahji-gold text-xs"
+        >
+          ↓
+        </motion.span>
+        <span className="text-[11px] text-dash-muted font-medium tracking-widest uppercase">
+          Scroll for all four chapters
+        </span>
+      </div>
+
       {/* Story cards */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 md:gap-4">
         {beats.map((beat, i) => (
