@@ -7,13 +7,26 @@ interface NavigationDotsProps {
 }
 
 const NavigationDots = ({ totalSlides, currentSlide, onSlideChange }: NavigationDotsProps) => {
-  const slideNames = ['ONJU', 'STORY', 'GENESIS', 'MINT', 'HBCU', 'ART', 'LIVE', 'WATCH', 'SOCIALS']
+  const slideNames = ['ONJU', 'STORY', 'GENESIS', 'MINT', 'HBCU', 'ART', 'MERCH', 'LIVE', 'LENS', 'WATCH', 'SOCIALS', 'VAULT']
+  const isSocials = currentSlide === 10
 
   return (
-    <div className="w-full flex items-center justify-center px-4 py-3 z-50">
-      <div
-        className="flex items-center justify-center gap-3 px-5 py-2.5 rounded-full"
-        style={{ background: '#161616', border: '1px solid #2a2a2a' }}
+    <div
+      className="w-full flex items-center justify-center px-4 py-3 z-50"
+      style={{
+        paddingLeft: 'calc(1rem + env(safe-area-inset-left))',
+        paddingRight: 'calc(1rem + env(safe-area-inset-right))',
+        paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))',
+      }}
+    >
+      <motion.div
+        animate={isSocials ? { opacity: [0.4, 1, 0.4] } : { opacity: 1 }}
+        transition={isSocials ? { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }}
+        className={`flex items-center justify-center gap-2.5 sm:gap-6 px-4 sm:px-8 py-3 sm:py-4 rounded-full transition-all duration-300 ${
+          isSocials
+            ? 'bg-transparent'
+            : 'bg-ohnahji-gold border-[6px] border-ohnahji-black shadow-neo'
+        }`}
         role="navigation"
         aria-label="Timeline navigation"
       >
@@ -22,31 +35,22 @@ const NavigationDots = ({ totalSlides, currentSlide, onSlideChange }: Navigation
             key={index}
             onClick={() => onSlideChange(index)}
             style={{ touchAction: 'manipulation' }}
-            className="group relative flex flex-col items-center"
+            className={`group relative flex flex-col items-center transition-all ${currentSlide === index ? 'scale-125' : 'opacity-70 hover:opacity-100'
+              }`}
             aria-label={`Go to slide ${slideNames[index]}`}
             aria-current={currentSlide === index ? 'step' : undefined}
           >
-            <motion.div
-              animate={currentSlide === index
-                ? { scale: 1.3, backgroundColor: '#FE517E' }
-                : { scale: 1, backgroundColor: '#444444' }
-              }
-              transition={{ duration: 0.2 }}
-              className="w-2.5 h-2.5 rounded-full"
-            />
             <div
-              className={`absolute -top-9 text-white text-[10px] font-bold px-2.5 py-1 rounded-md pointer-events-none whitespace-nowrap transition-all duration-150 ${
-                currentSlide === index
-                  ? 'opacity-100 -translate-y-0'
-                  : 'opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0'
-              }`}
-              style={{ background: '#1e1e1e', border: '1px solid #2a2a2a' }}
-            >
+              className={`w-4 h-4 border-2 border-ohnahji-black rounded-full transition-all ${currentSlide === index ? 'bg-ohnahji-white scale-110' : 'bg-ohnahji-burgundy'
+                }`}
+            />
+            <div className={`absolute -top-12 bg-ohnahji-black text-ohnahji-gold text-[10px] font-black px-3 py-1 rounded-full border-2 border-ohnahji-black pointer-events-none transition-all transform whitespace-nowrap shadow-neo-sm ${currentSlide === index ? 'opacity-100 -translate-y-0' : 'opacity-0 translate-y-2'
+              }`}>
               {slideNames[index]}
             </div>
           </button>
         ))}
-      </div>
+      </motion.div>
     </div>
   )
 }

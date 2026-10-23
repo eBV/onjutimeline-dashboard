@@ -9,9 +9,9 @@ interface NFTGalleryProps {
 
 // Intentional protection: the last 30 tokens of the on-chain supply stay
 // out of the gallery until their art is revealed. The supply figure shown
-// around the site is the full on-chain totalSupply (e.g. 5,094), so the
+// around the site is the full on-chain totalSupply (e.g. 5,097), so the
 // searchable gallery range is honestly labelled #1 to supply minus this
-// buffer (e.g. 5,064) instead of silently disagreeing with it.
+// buffer (e.g. 5,067) instead of silently disagreeing with it.
 const REVEAL_BUFFER = 30
 
 const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
@@ -22,12 +22,13 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
   const [searchInput, setSearchInput] = useState('')
   const [searchError, setSearchError] = useState('')
 
-  const maxToken = (totalSupply || 8888) - REVEAL_BUFFER
+  const supply = Math.max(0, totalSupply)
+  const maxToken = Math.max(1, supply - REVEAL_BUFFER)
 
   const navigateTo = useCallback((heroId: number) => {
     // Page window stays inside the revealed range so browsing can never
     // surface the protected tail tokens the search cap excludes.
-    const cap = Math.max(1, (totalSupply || 8888) - REVEAL_BUFFER)
+    const cap = Math.max(1, supply - REVEAL_BUFFER)
     setHeroTokenId(heroId)
     const PAGE = 60
     const half = PAGE / 2
@@ -35,7 +36,7 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
     const ids: number[] = []
     for (let i = start; i <= Math.min(start + PAGE - 1, cap); i++) ids.push(i)
     setTokens(ids)
-  }, [totalSupply])
+  }, [supply])
 
   const shuffleHero = useCallback(() => {
     navigateTo(Math.floor(Math.random() * maxToken) + 1)
@@ -83,7 +84,7 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
 
   return (
     <div className="w-full h-full bg-ohnahji-burgundy flex flex-col font-sans">
-      {/* Controls — in-flow header so tap targets match visual position */}
+      {/* Controls; in-flow header so tap targets match visual position */}
       <div className="flex-shrink-0 pt-20 pb-2 flex flex-col items-center gap-2 z-50">
         <div className="bg-ohnahji-black text-ohnahji-gold px-6 py-2 border-[6px] border-ohnahji-gold rounded-2xl shadow-neo">
           <span className="font-bold text-sm tracking-tighter">VIEWING: OHNAHJI #{heroTokenId}</span>
@@ -122,7 +123,7 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
           </span>
         )}
         <span className="text-ohnahji-white/50 font-bold text-[10px] tracking-wide">
-          REVEALED ART #1–{maxToken} OF {(totalSupply || 8888).toLocaleString()} MINTED; FINAL {REVEAL_BUFFER} STAY HIDDEN UNTIL REVEAL
+          REVEALED ART #1–{maxToken.toLocaleString()} OF {supply.toLocaleString()} MINTED; FINAL {REVEAL_BUFFER} STAY HIDDEN UNTIL REVEAL
         </span>
       </div>
 
@@ -130,7 +131,6 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
       <div className="flex-1 overflow-hidden">
         <NFTGalleryGrid tokens={tokens} heroTokenId={heroTokenId} onSelectToken={setSelectedTokenId} />
       </div>
-
       <NFTDetailModal tokenId={selectedTokenId} onClose={() => setSelectedTokenId(null)} />
     </div>
   )

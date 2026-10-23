@@ -12,34 +12,26 @@
   --color-ohnahji-black: #000000;
   --color-ohnahji-white: #FFFFFF;
 
-  /* Dashboard dark theme */
-  --color-dash-bg: #0D0D0D;
-  --color-dash-card: #161616;
-  --color-dash-card-hover: #1e1e1e;
-  --color-dash-border: #2a2a2a;
-  --color-dash-muted: #888888;
-  --color-dash-text: #FFFFFF;
-
   /* shadcn/Radix semantic tokens */
-  --color-border: #2a2a2a;
-  --color-input: #161616;
+  --color-border: #000000;
+  --color-input: #000000;
   --color-ring: #FE517E;
-  --color-background: #0D0D0D;
-  --color-foreground: #FFFFFF;
+  --color-background: #FFFFFF;
+  --color-foreground: #3C0010;
   --color-primary: #FE517E;
   --color-primary-foreground: #FFFFFF;
   --color-secondary: #F1C40F;
   --color-secondary-foreground: #000000;
-  --color-accent: #1e1e1e;
+  --color-accent: #3C0010;
   --color-accent-foreground: #FFFFFF;
   --color-destructive: #FF0000;
   --color-destructive-foreground: #FFFFFF;
-  --color-muted: #222222;
-  --color-muted-foreground: #888888;
-  --color-popover: #161616;
-  --color-popover-foreground: #FFFFFF;
-  --color-card: #161616;
-  --color-card-foreground: #FFFFFF;
+  --color-muted: #F5F5F5;
+  --color-muted-foreground: #666666;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #3C0010;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #3C0010;
 
   /* Typography */
   --font-sans: Inter, sans-serif;
@@ -52,7 +44,7 @@
   /* Custom ring width */
   --ring-width-6: 6px;
 
-  /* Legacy neo-pop shadows (kept for gallery components) */
+  /* Neo-pop shadows */
   --shadow-neo: 8px 8px 0px 0px #000000;
   --shadow-neo-sm: 4px 4px 0px 0px #000000;
   --shadow-neo-lg: 12px 12px 0px 0px #000000;
@@ -91,8 +83,8 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(254, 81, 126, 0); }
-  50%       { box-shadow: 0 0 16px 4px rgba(254, 81, 126, 0.3); }
+  0%, 100% { box-shadow: 8px 8px 0px 0px #000000; }
+  50%       { box-shadow: 8px 8px 0px 0px #000000, 0 0 20px #F1C40F; }
 }
 
 /* ─── Custom utilities ───────────────────────────────────────────────────── */
@@ -100,6 +92,17 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
+}
+
+/* App shell height: a plain 100vh rule for iOS versions without dvh
+   support, upgraded to 100dvh inside @supports so supporting browsers
+   track the dynamic viewport. (Two height declarations in one rule get
+   collapsed by the CSS optimiser, hence the separate supports block.) */
+@layer utilities {
+  .h-app-shell { height: 100vh; }
+  @supports (height: 100dvh) {
+    .h-app-shell { height: 100dvh; }
+  }
 }
 
 @utility container {
@@ -111,17 +114,17 @@
 /* ─── Base layer ─────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --radius: 12px;
+    --radius: 24px;
   }
 
   * {
-    border-color: #2a2a2a;
+    border-color: #000000;
   }
 
   body {
     @apply font-sans;
-    background-color: #0D0D0D;
-    color: #FFFFFF;
+    background-color: #3C0010;
+    color: #3C0010;
     overflow-x: hidden;
   }
 
@@ -129,177 +132,14 @@
     @apply font-sans;
   }
 
-  ::-webkit-scrollbar       { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: #1a1a1a; }
-  ::-webkit-scrollbar-thumb { background: #FE517E; border-radius: 4px; }
+  ::-webkit-scrollbar       { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-track { background: #FFFFFF; border-left: 6px solid #000000; border-radius: 0; }
+  ::-webkit-scrollbar-thumb { background: #FE517E; border: 6px solid #000000; border-radius: 0; }
   ::-webkit-scrollbar-thumb:hover { background: #F1C40F; }
-
-  /* Visible keyboard focus — brand pink ring, never removed */
-  :focus-visible {
-    outline: 2px solid #FE517E;
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
 }
 
-/* ─── Dashboard component classes ───────────────────────────────────────── */
+/* ─── Component classes ──────────────────────────────────────────────────── */
 @layer components {
-  /* Cards */
-  .dash-card {
-    background-color: #161616;
-    border: 1px solid #2a2a2a;
-    border-radius: 12px;
-  }
-
-  .dash-card-highlight {
-    background-color: #1a0d12;
-    border: 1px solid rgba(254, 81, 126, 0.35);
-    border-radius: 12px;
-  }
-
-  .dash-card-gold {
-    background-color: #141200;
-    border: 1px solid rgba(241, 196, 15, 0.3);
-    border-radius: 12px;
-  }
-
-  /* Labels */
-  .dash-label {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #888888;
-  }
-
-  /* Badges */
-  .dash-badge {
-    background: rgba(254, 81, 126, 0.12);
-    color: #FE517E;
-    border: 1px solid rgba(254, 81, 126, 0.25);
-    border-radius: 6px;
-    padding: 2px 8px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: inline-block;
-  }
-
-  .dash-badge-gold {
-    background: rgba(241, 196, 15, 0.1);
-    color: #F1C40F;
-    border: 1px solid rgba(241, 196, 15, 0.25);
-    border-radius: 6px;
-    padding: 2px 8px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: inline-block;
-  }
-
-  /* Buttons */
-  .dash-btn {
-    background: #FE517E;
-    color: white;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-weight: 700;
-    font-size: 14px;
-    transition: opacity 0.15s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    cursor: pointer;
-  }
-  .dash-btn:hover { opacity: 0.85; }
-  .dash-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .dash-btn-gold {
-    background: #F1C40F;
-    color: #000;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-weight: 700;
-    font-size: 14px;
-    transition: opacity 0.15s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-  .dash-btn-gold:hover { opacity: 0.85; }
-
-  .dash-btn-outline {
-    background: transparent;
-    color: #FE517E;
-    border: 1px solid rgba(254, 81, 126, 0.4);
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-weight: 700;
-    font-size: 14px;
-    transition: all 0.15s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-  .dash-btn-outline:hover { background: rgba(254, 81, 126, 0.08); }
-
-  .dash-btn-ghost {
-    background: transparent;
-    color: #888;
-    border: 1px solid #2a2a2a;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.15s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-  .dash-btn-ghost:hover { color: #fff; border-color: #444; background: #1e1e1e; }
-
-  /* Tabs */
-  .dash-tab {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #888;
-    transition: all 0.15s;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-  .dash-tab:hover { color: #fff; }
-  .dash-tab-active {
-    background: #FE517E;
-    color: white;
-  }
-
-  /* Progress bar */
-  .dash-progress-track {
-    height: 6px;
-    background: #2a2a2a;
-    border-radius: 99px;
-    overflow: hidden;
-  }
-  .dash-progress-fill-pink {
-    height: 100%;
-    background: #FE517E;
-    border-radius: 99px;
-  }
-  .dash-progress-fill-gold {
-    height: 100%;
-    background: #F1C40F;
-    border-radius: 99px;
-  }
-
-  /* Legacy neo-pop (kept for gallery) */
   .neo-button {
     @apply bg-ohnahji-gold text-ohnahji-black border-[6px] border-ohnahji-black shadow-neo transition-all duration-150 rounded-2xl;
   }
@@ -329,16 +169,21 @@
   .neo-card  { @apply bg-ohnahji-white border-[6px] border-ohnahji-black shadow-neo; }
   .neo-input { @apply bg-ohnahji-white border-[6px] border-ohnahji-black px-4 py-2 focus:outline-none rounded-2xl; }
 
-  .video-container             { @apply relative overflow-hidden; border: 1px solid #2a2a2a; border-radius: 12px; }
+  .video-container             { @apply relative border-[6px] border-ohnahji-black shadow-neo overflow-hidden; }
   .video-container iframe      { @apply absolute top-0 left-0 w-full h-full; }
 
   .glitch-hover:hover { animation: glitch 0.3s ease-in-out; }
   .pulse-mint         { animation: pulse-glow 2s ease-in-out infinite; }
 
-  .custom-scrollbar::-webkit-scrollbar       { width: 4px; }
-  .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar       { width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
   .custom-scrollbar::-webkit-scrollbar-thumb { background: #FE517E; border: none; border-radius: 10px; }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #F1C40F; }
+
+  .slide-enter        { opacity: 0; transform: translateX(100%); }
+  .slide-enter-active { opacity: 1; transform: translateX(0); transition: opacity 500ms, transform 500ms; }
+  .slide-exit         { opacity: 1; transform: translateX(0); }
+  .slide-exit-active  { opacity: 0; transform: translateX(-100%); transition: opacity 500ms, transform 500ms; }
 
   .react-zoom-pan-pinch__transform-container,
   .react-zoom-pan-pinch__content { width: 100% !important; height: 100% !important; }
@@ -348,25 +193,23 @@
 [class*="tw-connect-button"],
 [class*="tw-details-button"],
 button[class*="tw-"] {
-  border: 1px solid rgba(254, 81, 126, 0.4) !important;
-  box-shadow: none !important;
-  border-radius: 8px !important;
-  background-color: transparent !important;
-  color: #FE517E !important;
-  font-weight: 700 !important;
-  font-size: 13px !important;
+  border: 6px solid #000000 !important;
+  box-shadow: 8px 8px 0px 0px #000000 !important;
+  border-radius: 24px !important;
+  background-color: #F1C40F !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
   transition: all 0.15s ease-in-out !important;
 }
 
 [class*="tw-connect-button"]:hover,
 [class*="tw-details-button"]:hover {
-  background-color: rgba(254, 81, 126, 0.1) !important;
-  transform: none !important;
-  box-shadow: none !important;
+  transform: translate(-4px, -4px) !important;
+  box-shadow: 12px 12px 0px 0px #000000 !important;
 }
 
 [class*="tw-connect-button"]:active,
 [class*="tw-details-button"]:active {
-  transform: none !important;
-  box-shadow: none !important;
+  transform: translate(4px, 4px) !important;
+  box-shadow: 0px 0px 0px 0px #000000 !important;
 }

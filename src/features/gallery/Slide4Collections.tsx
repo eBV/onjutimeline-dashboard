@@ -1,144 +1,118 @@
 import { motion } from 'framer-motion'
-import ResilientImage from '../../components/ResilientImage'
 import { IPFS_CID_OKOLOTO } from '../../lib/constants'
-
-interface Artwork {
-  id: number
-  title: string
-  collection: string
-  image?: string
-  ipfs?: { cid: string; path: string }
-  link: string
-  accent: string
-}
-
-const artworks: Artwork[] = [
-  {
-    id: 1,
-    title: 'Okoloto #001',
-    collection: 'Okolotos',
-    ipfs: { cid: IPFS_CID_OKOLOTO, path: '640.jpg' },
-    link: 'https://opensea.io/collection/okoloto',
-    accent: '#FE517E',
-  },
-  {
-    id: 2,
-    title: 'Okoloto #002',
-    collection: 'Okolotos',
-    ipfs: { cid: IPFS_CID_OKOLOTO, path: '265.jpg' },
-    link: 'https://opensea.io/collection/okoloto',
-    accent: '#FE517E',
-  },
-  {
-    id: 3,
-    title: 'Elemnts #001',
-    collection: 'Elemnts',
-    image: 'https://arweave.net/PLfqR9j24VXlek1oNotBkYrrRH_IiQQKDjmrsvAEEQc',
-    link: 'https://opensea.io/collection/elemntsbyohnahji',
-    accent: '#F1C40F',
-  },
-  {
-    id: 4,
-    title: 'Elemnts #002',
-    collection: 'Elemnts',
-    image: 'https://arweave.net/G87rtS-Mt-erTUE3aZZVwTfQ2fO4USetBEz8SmARM_M',
-    link: 'https://opensea.io/collection/elemntsbyohnahji',
-    accent: '#F1C40F',
-  },
-  {
-    id: 5,
-    title: 'Okoloto #003',
-    collection: 'Okolotos',
-    ipfs: { cid: IPFS_CID_OKOLOTO, path: '1737.jpg' },
-    link: 'https://opensea.io/collection/okoloto',
-    accent: '#FE517E',
-  },
-  {
-    id: 6,
-    title: 'Elemnts #003',
-    collection: 'Elemnts',
-    image: 'https://arweave.net/8obmakSPrhbjzUwImpC9MKBXamQ7uFvSKCe-bU8W0MA',
-    link: 'https://opensea.io/collection/elemntsbyohnahji',
-    accent: '#F1C40F',
-  },
-]
+import ResilientImage from '../../components/ResilientImage'
 
 const Slide4Collections = () => {
-  return (
-    // pb-14: keeps the bottom-row card labels clear of the nav dots'
-    // active tooltip, which projects 36px up from the pill below the
-    // slide area when this slide's inner scroller is at the bottom.
-    <div className="min-h-full flex flex-col justify-center pt-8 pb-14 gap-5">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex items-end justify-between"
-      >
-        <div>
-          <span className="dash-badge mb-3">Generative Art</span>
-          <h1 className="text-3xl md:text-5xl font-black text-white leading-none mt-3">
-            Okolotos &amp; Elemnts
-          </h1>
-          <p className="text-dash-muted text-sm mt-2">Code-based artistic expression</p>
-        </div>
-        <div className="hidden md:flex gap-2">
-          <span className="dash-badge">2 Collections</span>
-          <span className="dash-badge-gold">On-chain</span>
-        </div>
-      </motion.div>
+  const artworks: {
+    id: number
+    title: string
+    color: string
+    image?: string
+    ipfs?: { cid: string; path: string }
+    link: string
+  }[] = [
+    {
+      id: 1,
+      title: 'Okoloto #001',
+      color: 'from-purple-500 to-pink-500',
+      ipfs: { cid: IPFS_CID_OKOLOTO, path: '640.jpg' },
+      link: 'https://opensea.io/collection/okoloto',
+    },
+    {
+      id: 2,
+      title: 'Okoloto #002',
+      color: 'from-blue-500 to-cyan-500',
+      ipfs: { cid: IPFS_CID_OKOLOTO, path: '265.jpg' },
+      link: 'https://opensea.io/collection/okoloto',
+    },
+    {
+      id: 3,
+      title: 'Elemnts #001',
+      color: 'from-orange-500 to-yellow-500',
+      image: 'https://arweave.net/PLfqR9j24VXlek1oNotBkYrrRH_IiQQKDjmrsvAEEQc',
+      link: 'https://opensea.io/collection/elemntsbyohnahji',
+    },
+    {
+      id: 4,
+      title: 'Elemnts #002',
+      color: 'from-green-500 to-emerald-500',
+      image: 'https://arweave.net/G87rtS-Mt-erTUE3aZZVwTfQ2fO4USetBEz8SmARM_M',
+      link: 'https://opensea.io/collection/elemntsbyohnahji',
+    },
+    {
+      id: 5,
+      title: 'Okoloto #003',
+      color: 'from-red-500 to-pink-500',
+      ipfs: { cid: IPFS_CID_OKOLOTO, path: '1737.jpg' },
+      link: 'https://opensea.io/collection/okoloto',
+    },
+    {
+      id: 6,
+      title: 'Elemnts #003',
+      color: 'from-indigo-500 to-purple-500',
+      image: 'https://arweave.net/8obmakSPrhbjzUwImpC9MKBXamQ7uFvSKCe-bU8W0MA',
+      link: 'https://opensea.io/collection/elemntsbyohnahji',
+    },
+  ]
 
-      {/* Art grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-        {artworks.map((art, index) => (
-          <motion.a
-            key={art.id}
-            href={art.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: index * 0.07 }}
-            className="rounded-xl overflow-hidden group cursor-pointer"
-            style={{ background: '#161616', border: '1px solid #2a2a2a' }}
-          >
-            <div className="aspect-square overflow-hidden bg-[#0a0a0a]">
-              {art.ipfs ? (
-                <ResilientImage
-                  cid={art.ipfs.cid}
-                  path={art.ipfs.path}
-                  alt={art.title}
-                  loading="lazy"
-                  placeholderText={art.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              ) : (
-                <img
-                  src={art.image}
-                  alt={art.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              )}
-            </div>
-            <div
-              className="px-3 py-2.5 flex items-center justify-between"
-              style={{ borderTop: '1px solid #2a2a2a' }}
+  return (
+    <div className="min-h-full flex flex-col items-center justify-start md:justify-center pt-20 pb-8 md:py-4">
+      <div className="max-w-5xl w-full flex flex-col">
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-3 md:mb-5"
+        >
+          <div className="inline-block bg-ohnahji-pink text-ohnahji-white px-4 py-1 border-[6px] border-ohnahji-black rounded-2xl mb-3 font-sans">
+            <span className="text-xs font-bold uppercase tracking-wider">GENERATIVE ART</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black text-ohnahji-gold mb-2 leading-none">
+            OKOLOTOS & ELEMNTS
+          </h1>
+          <p className="text-base text-ohnahji-white font-bold font-sans">
+            Code-based artistic expression
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-3 md:gap-3">
+          {artworks.map((art, index) => (
+            <motion.a
+              key={art.id}
+              href={art.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              whileHover={{ scale: 1.02, zIndex: 10 }}
+              className={`neo-card p-2 bg-gradient-to-br ${art.color} rounded-2xl cursor-pointer group flex flex-col gap-2`}
             >
-              <div>
-                <div className="text-white text-xs font-bold leading-none">{art.title}</div>
-                <div className="text-dash-muted text-[10px] mt-0.5">{art.collection}</div>
+              <div className="w-full aspect-square border-4 border-ohnahji-black rounded-xl overflow-hidden bg-white/20">
+                {art.ipfs ? (
+                  <ResilientImage
+                    cid={art.ipfs.cid}
+                    path={art.ipfs.path}
+                    alt={art.title}
+                    loading="lazy"
+                    placeholderText={art.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img
+                    src={art.image}
+                    alt={art.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
+                )}
               </div>
-              <span
-                className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-                style={{ color: art.accent, background: `${art.accent}15`, border: `1px solid ${art.accent}30` }}
-              >
-                ↗
-              </span>
-            </div>
-          </motion.a>
-        ))}
+              <div className="bg-ohnahji-white border-4 border-ohnahji-black px-3 py-2 rounded-lg shadow-neo-sm group-hover:shadow-neo transition-all">
+                <p className="font-black font-sans uppercase text-sm md:text-[11px] tracking-tighter text-center">{art.title}</p>
+              </div>
+            </motion.a>
+          ))}
+        </div>
       </div>
     </div>
   )

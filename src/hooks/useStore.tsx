@@ -1,10 +1,24 @@
 import React, { createContext, useContext, useState } from 'react'
+import { createThirdwebClient, defineChain } from 'thirdweb'
+import { ethereum } from 'thirdweb/chains'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 
 import { CONTRACT_ADDRESS } from '../lib/constants'
 
+// Constants
+const CLIENT_ID = '09797204fc3d09a0636257d079ebcb80'
+
+// Last on-chain totalSupply verified on 2026-10-22. This is only the
+// pre-fetch snapshot: initialDataUpdatedAt is set to 0 below, so React Query
+// treats it as stale and replaces it with the live contract read on mount.
+// If that read fails, the UI keeps this known value instead of inventing a
+// placeholder supply.
+export const LAST_KNOWN_TOTAL_SUPPLY = 5097
+
 // Types
 interface StoreContextType {
+  client: any
+  chain: any
   totalSupply: number
   currentSlide: number
   isGalleryOpen: boolean
@@ -14,6 +28,10 @@ interface StoreContextType {
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined)
+
+// Thirdweb Client
+const client = createThirdwebClient({ clientId: CLIENT_ID })
+const chain = defineChain(ethereum)
 
 // Create a client
 const queryClient = new QueryClient({
@@ -44,7 +62,7 @@ const fetchTotalSupply = async (): Promise<number> => {
   const data = await response.json()
   if (data.result && data.result !== '0x') {
     const supply = parseInt(data.result, 16)
-    return supply > 0 ? supply : 1000
+    if (Number.isFinite(supply) && supply > 0) return supply
   }
   throw new Error('Failed to fetch total supply')
 }
@@ -54,18 +72,18 @@ const StoreInner: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const [manualTotalSupply, setManualTotalSupply] = useState<number | null>(null)
 
-  // No initialData — let the query actually fetch on mount so we get the real
-  // on-chain supply instead of staying pinned at the stale placeholder.
-  // Fall back to 8888 (max collection size) while loading so the gallery is
-  // fully browsable before the RPC responds.
-  const { data: queriedTotalSupply = 8888 } = useQuery({
+  const { data: queriedTotalSupply } = useQuery({
     queryKey: ['totalSupply'],
     queryFn: fetchTotalSupply,
+    initialData: LAST_KNOWN_TOTAL_SUPPLY,
+    initialDataUpdatedAt: 0,
   })
 
   const totalSupply = manualTotalSupply ?? queriedTotalSupply
 
   const value = {
+    client,
+    chain,
     totalSupply,
     currentSlide,
     isGalleryOpen,

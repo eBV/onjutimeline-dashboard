@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { IPFS_CID_METADATA } from '../lib/constants'
 import { fetchIpfs } from '../lib/ipfs'
 
+
 /**
  * Hook to get ETH price in USD using TanStack Query
  */

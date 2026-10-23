@@ -38,6 +38,12 @@ const NFTDetailModal = ({ tokenId, onClose }: NFTDetailModalProps) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[120] flex items-start md:items-center justify-center p-3 md:p-6 bg-ohnahji-black/95 backdrop-blur-md overflow-y-auto"
+          style={{
+            paddingTop: 'calc(0.75rem + env(safe-area-inset-top))',
+            paddingRight: 'calc(0.75rem + env(safe-area-inset-right))',
+            paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))',
+            paddingLeft: 'calc(0.75rem + env(safe-area-inset-left))',
+          }}
           onClick={onClose}
         >
           <div

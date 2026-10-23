@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
 import { IPFS_CID_GENESIS } from '../lib/constants'
-import { useIsMobile } from '../hooks/use-mobile'
 import ResilientImage from './ResilientImage'
+import { useIsMobile } from '../hooks/use-mobile'
 
 interface NFTGalleryGridProps {
   tokens: number[]

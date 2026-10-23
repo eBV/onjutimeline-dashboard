@@ -3,6 +3,7 @@
   "short_name": "OHNAHJI",
   "description": "A journey through NFT history, HBCU education, and generative art",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#3C0010",
   "theme_color": "#3C0010",

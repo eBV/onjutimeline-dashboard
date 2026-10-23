@@ -35,11 +35,24 @@ test.describe('Ohnahji Timeline Smoke Tests', () => {
 
   test('should show correct price on mint slide', async ({ page }) => {
     await page.goto('/mint');
-    // The h1 has a <br /> between "BHM '26" and "sale" — match by heading role
-    await expect(page.getByRole('heading', { name: /BHM.*26.*sale/i })).toBeVisible();
+    // The h1 has a <br /> between "Spring '26" and "drop" — match by heading role
+    await expect(page.getByRole('heading', { name: /Spring.*26.*drop/i })).toBeVisible();
 
     // Check quantity toggles
     await expect(page.getByRole('button', { name: '+' })).toBeVisible();
     await expect(page.getByRole('button', { name: '-' })).toBeVisible();
+  });
+
+  test('new slides load on deep links', async ({ page }) => {
+    await page.goto('/merch');
+    await expect(page.getByRole('heading', { name: /Campus Shop/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /SHOP MERCH/i })).toBeVisible();
+
+    await page.goto('/lens');
+    await expect(page.getByRole('heading', { name: /@ohnahji\.lens/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /FOLLOW ON LENS/i })).toBeVisible();
+
+    await page.goto('/vault');
+    await expect(page.getByRole('heading', { name: /The Vault/i })).toBeVisible();
   });
 });
