@@ -8,7 +8,7 @@ import { StoreProvider, useStore } from './hooks/useStore'
 import { HolderProvider, useHolderStatus } from './hooks/useHolderStatus'
 import { useSlideScroll } from './hooks/useSlideScroll'
 import NavigationDots from './components/NavigationDots'
-import { visibleSlides, GATED_PATHS, SlideMeta } from './lib/deck'
+import { visibleSlides, gateSatisfied, SlideMeta } from './lib/deck'
 import { useSiteConfig, DEFAULT_SITE_CONFIG } from './lib/siteConfig'
 import { isAdminAddress, ADMIN_PATH } from './lib/admin'
 
@@ -48,7 +48,7 @@ const AppContent = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { client, chain, currentSlide, setCurrentSlide, isGalleryOpen, setIsGalleryOpen, totalSupply } = useStore()
-  const { isHolder, isPending, address } = useHolderStatus()
+  const { isHolder, isConnected, isPending, address } = useHolderStatus()
 
   // The owner's live site config (slide visibility, background colours,
   // feature switches). Until it lands, and if it ever fails, the code
@@ -77,12 +77,15 @@ const AppContent = () => {
       '/firstlook': <SlideFirstLook />,
       '/admin': <SlideAdmin />,
     }
-    return visibleSlides(isHolder, { isAdmin, slideConfig: siteConfig.slides }).map((meta) => ({
+    return visibleSlides(
+      { isConnected, isHolder },
+      { isAdmin, slideConfig: siteConfig.slides, order: siteConfig.order, fontWeight: siteConfig.fontWeight },
+    ).map((meta) => ({
       ...meta,
       innerClass: meta.path === '/' ? HERO_INNER : SLIDE_INNER,
       content: contentByPath[meta.path],
     }))
-  }, [isHolder, isAdmin, siteConfig, totalSupply, setIsGalleryOpen])
+  }, [isHolder, isConnected, isAdmin, siteConfig, totalSupply, setIsGalleryOpen])
 
   // Cold-load grace for gated deep links: at first paint the wallet
   // session has not started restoring yet, so neither "account present"
@@ -142,10 +145,21 @@ const AppContent = () => {
       if (idx !== currentSlide) setCurrentSlide(idx)
       return
     }
-    if ((GATED_PATHS.includes(location.pathname) || location.pathname === ADMIN_PATH) && (isPending || !graceOver)) return
+    // A path outside the visible deck bounces home, except a gated
+    // path whose gate is merely unresolved: while the wallet session
+    // is restoring or the balance is reading, wait rather than bounce
+    // a possibly-valid deep link (the same grace the old gated pair
+    // got). A hidden (visible=false) slide bounces at once.
+    const cfgEntry = siteConfig.slides[location.pathname]
+    const gatedUnsatisfied =
+      location.pathname === ADMIN_PATH ||
+      (cfgEntry !== undefined &&
+        cfgEntry.gate !== 'public' &&
+        !gateSatisfied(cfgEntry.gate, { isConnected, isHolder }))
+    if (gatedUnsatisfied && (isPending || !graceOver)) return
     navigate('/', { replace: true })
     if (currentSlide !== 0) setCurrentSlide(0)
-  }, [location.pathname, slidePaths, currentSlide, isPending, graceOver, navigate, setCurrentSlide])
+  }, [location.pathname, slidePaths, currentSlide, isPending, graceOver, navigate, setCurrentSlide, siteConfig, isConnected, isHolder])
 
   // Keep the browser's own chrome tint (theme-color meta) on the settled
   // slide's colour. The body background is set here too as a backstop
@@ -202,7 +216,14 @@ const AppContent = () => {
             <div
               key={slide.path}
               className={`min-w-full h-full snap-start ${slide.shellClass}`}
-              style={{ backgroundColor: slide.hex }}
+              // --slide-weight carries the slide's resolved font weight
+              // (per-slide override, else sitewide) for its header copy;
+              // the .slide-copy rule in index.css reads it. Unset when
+              // there is no override, so the design's own weights rule.
+              style={{
+                backgroundColor: slide.hex,
+                ...(slide.weight ? { '--slide-weight': slide.weight } : {}),
+              } as React.CSSProperties}
             >
               {/* Per-slide Suspense: a lazily loaded slide (including the
                   gated pair appearing on holder connect) never blanks the
