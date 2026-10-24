@@ -1,10 +1,19 @@
 import { BASE_SLIDES, GATED_SLIDES, GATED_PATHS, visibleSlides } from '../lib/deck'
 
 describe('deck composition', () => {
-  test('base deck is the 10 public slides in order', () => {
+  test('base deck is the 11 public slides in order', () => {
     expect(BASE_SLIDES.map((s) => s.path)).toEqual([
-      '/', '/story', '/genesis', '/mint', '/community', '/art', '/merch', '/live', '/lens', '/socials',
+      '/', '/story', '/genesis', '/mint', '/community', '/art', '/merch', '/live', '/lens', '/quotes', '/socials',
     ])
+  })
+
+  test('quotes sits in the base deck after lens and before socials', () => {
+    const paths = BASE_SLIDES.map((s) => s.path)
+    expect(paths.indexOf('/quotes')).toBe(paths.indexOf('/lens') + 1)
+    expect(paths.indexOf('/quotes')).toBe(paths.indexOf('/socials') - 1)
+    const quotes = BASE_SLIDES.find((s) => s.path === '/quotes')
+    expect(quotes?.name).toBe('QUOTES')
+    expect(quotes?.gated).toBeFalsy()
   })
 
   test('the removed /watch slide is not in any deck', () => {
@@ -14,16 +23,17 @@ describe('deck composition', () => {
 
   test('non-holders see exactly the base deck: no vault, no first look', () => {
     const paths = visibleSlides(false).map((s) => s.path)
-    expect(paths).toHaveLength(10)
+    expect(paths).toHaveLength(11)
     expect(paths).not.toContain('/vault')
     expect(paths).not.toContain('/firstlook')
+    expect(paths).toContain('/quotes')
   })
 
   test('holders see the gated pair appended after the base deck, vault first', () => {
     const paths = visibleSlides(true).map((s) => s.path)
-    expect(paths).toHaveLength(12)
-    expect(paths.slice(0, 10)).toEqual(BASE_SLIDES.map((s) => s.path))
-    expect(paths.slice(10)).toEqual(['/vault', '/firstlook'])
+    expect(paths).toHaveLength(13)
+    expect(paths.slice(0, 11)).toEqual(BASE_SLIDES.map((s) => s.path))
+    expect(paths.slice(11)).toEqual(['/vault', '/firstlook'])
   })
 
   test('gated paths are exactly the gated slides', () => {

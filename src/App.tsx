@@ -19,6 +19,7 @@ const Slide5Collections = lazy(() => import('./features/gallery/Slide4Collection
 const SlideMerchShop = lazy(() => import('./features/merch/SlideMerch'))
 const Slide6Livestreams = lazy(() => import('./features/community/Slide5Livestreams'))
 const SlideLensFeed = lazy(() => import('./features/lens/SlideLens'))
+const SlideQuotesFeed = lazy(() => import('./features/quotes/SlideQuotes'))
 const Slide8Socials = lazy(() => import('./features/community/Slide6Socials'))
 const SlideVaultLocker = lazy(() => import('./features/vault/SlideVault'))
 const SlideFirstLook = lazy(() => import('./features/firstlook/SlideFirstLook'))
@@ -57,6 +58,7 @@ const AppContent = () => {
       '/merch': <SlideMerchShop />,
       '/live': <Slide6Livestreams />,
       '/lens': <SlideLensFeed />,
+      '/quotes': <SlideQuotesFeed />,
       '/socials': <Slide8Socials />,
       '/vault': <SlideVaultLocker />,
       '/firstlook': <SlideFirstLook />,

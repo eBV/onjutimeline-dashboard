@@ -31,6 +31,9 @@ export const BASE_SLIDES: SlideMeta[] = [
   // Lens slide background is the brand maroon (was black); the Lens-green
   // accents live inside the slide.
   { path: '/lens', name: 'LENS', hex: '#3C0010', shellClass: 'bg-ohnahji-burgundy' },
+  // Quotes: white room, colourful cards. Public; voting is wallet
+  // sign-in gated (any wallet), not holder gated.
+  { path: '/quotes', name: 'QUOTES', hex: '#FFFFFF', shellClass: 'bg-ohnahji-white' },
   { path: '/socials', name: 'SOCIALS', hex: '#F1C40F', shellClass: 'bg-ohnahji-gold' },
 ]
 
