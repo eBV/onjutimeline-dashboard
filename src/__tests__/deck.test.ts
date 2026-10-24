@@ -6,9 +6,9 @@ const CONNECTED = { isConnected: true, isHolder: false }
 const HOLDER = { isConnected: true, isHolder: true }
 
 describe('deck composition', () => {
-  test('base deck is the 11 public slides in order', () => {
+  test('base deck is the 12 public slides in order', () => {
     expect(BASE_SLIDES.map((s) => s.path)).toEqual([
-      '/', '/story', '/genesis', '/mint', '/community', '/art', '/merch', '/live', '/lens', '/quotes', '/socials',
+      '/', '/story', '/genesis', '/mint', '/community', '/art', '/merch', '/live', '/lens', '/quotes', '/socials', '/muralith',
     ])
   })
 
@@ -28,7 +28,7 @@ describe('deck composition', () => {
 
   test('non-holders see exactly the base deck: no vault, no first look', () => {
     const paths = visibleSlides(NOBODY).map((s) => s.path)
-    expect(paths).toHaveLength(11)
+    expect(paths).toHaveLength(12)
     expect(paths).not.toContain('/vault')
     expect(paths).not.toContain('/firstlook')
     expect(paths).toContain('/quotes')
@@ -36,9 +36,9 @@ describe('deck composition', () => {
 
   test('holders see the gated pair appended after the base deck, vault first', () => {
     const paths = visibleSlides(HOLDER).map((s) => s.path)
-    expect(paths).toHaveLength(13)
-    expect(paths.slice(0, 11)).toEqual(BASE_SLIDES.map((s) => s.path))
-    expect(paths.slice(11)).toEqual(['/vault', '/firstlook'])
+    expect(paths).toHaveLength(14)
+    expect(paths.slice(0, 12)).toEqual(BASE_SLIDES.map((s) => s.path))
+    expect(paths.slice(12)).toEqual(['/vault', '/firstlook'])
   })
 
   test('gated paths are exactly the gated slides', () => {
@@ -102,7 +102,7 @@ describe('site-config deck filtering', () => {
     const paths = visibleSlides(NOBODY, {
       slideConfig: { '/story': { visible: false }, '/merch': { visible: false } },
     }).map((s) => s.path)
-    expect(paths).toHaveLength(9)
+    expect(paths).toHaveLength(10)
     expect(paths).not.toContain('/story')
     expect(paths).not.toContain('/merch')
     expect(paths[0]).toBe('/')
@@ -121,7 +121,7 @@ describe('site-config deck filtering', () => {
       slideConfig: { '/': { visible: false } },
     }).map((s) => s.path)
     expect(paths[0]).toBe('/')
-    expect(paths).toHaveLength(11)
+    expect(paths).toHaveLength(12)
   })
 
   test('a hex override replaces the slide hex, which is what the tint stops read', () => {
@@ -140,13 +140,13 @@ describe('tab order', () => {
   const all = [...BASE_SLIDES, ...GATED_SLIDES].map((s) => s.path)
 
   test('a stored order reorders the deck, hero pinned first', () => {
-    const order = ['/', '/quotes', '/story', '/genesis', '/mint', '/community', '/art', '/merch', '/live', '/lens', '/socials', '/vault', '/firstlook']
+    const order = ['/', '/quotes', '/story', '/genesis', '/mint', '/community', '/art', '/merch', '/live', '/lens', '/socials', '/muralith', '/vault', '/firstlook']
     const paths = visibleSlides(HOLDER, { order }).map((s) => s.path)
     expect(paths).toEqual(order)
   })
 
   test('order applies to visitors too, and admin still appends last', () => {
-    const order = ['/', '/socials', '/story', '/genesis', '/mint', '/community', '/art', '/merch', '/live', '/lens', '/quotes', '/vault', '/firstlook']
+    const order = ['/', '/socials', '/story', '/genesis', '/mint', '/community', '/art', '/merch', '/live', '/lens', '/quotes', '/muralith', '/vault', '/firstlook']
     const paths = visibleSlides(NOBODY, { order, isAdmin: true }).map((s) => s.path)
     expect(paths[0]).toBe('/')
     expect(paths[1]).toBe('/socials')
@@ -193,14 +193,14 @@ describe('admin slide', () => {
 
   test('admin appends at the very end, after the gated pair', () => {
     const paths = visibleSlides(HOLDER, { isAdmin: true }).map((s) => s.path)
-    expect(paths).toHaveLength(14)
-    expect(paths.slice(11)).toEqual(['/vault', '/firstlook', '/admin'])
+    expect(paths).toHaveLength(15)
+    expect(paths.slice(12)).toEqual(['/vault', '/firstlook', '/admin'])
   })
 
   test('admin without holder state still gets the tab after the base deck', () => {
     const paths = visibleSlides(NOBODY, { isAdmin: true }).map((s) => s.path)
-    expect(paths).toHaveLength(12)
-    expect(paths[11]).toBe('/admin')
+    expect(paths).toHaveLength(13)
+    expect(paths[12]).toBe('/admin')
   })
 
   test('the admin slide is not part of the base or gated decks', () => {

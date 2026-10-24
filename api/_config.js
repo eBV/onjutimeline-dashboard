@@ -37,7 +37,7 @@ export const HEX_RE = /^#[0-9A-Fa-f]{6}$/
 // not part of the public deck config and can never be toggled.
 export const KNOWN_SLIDE_PATHS = [
   '/', '/story', '/genesis', '/mint', '/community', '/art', '/merch',
-  '/live', '/lens', '/quotes', '/socials', '/vault', '/firstlook',
+  '/live', '/lens', '/quotes', '/socials', '/muralith', '/vault', '/firstlook',
 ]
 
 export const FEATURE_KEYS = ['mintPill', 'quotesVoting', 'twitchVodRows', 'antiPhishingLine']
@@ -110,6 +110,10 @@ export const DEFAULT_COPY = {
     heading: 'Join the community',
     paragraph: 'Follow us across the web and stay updated on the latest in emerging tech.',
   },
+  '/muralith': {
+    heading: 'Muralith\nmint',
+    paragraph: 'Muralith by Ohnahji crops a single deterministic window from an endless wall where strobe, bass pressure and torn flyers have sedimented into plaster. No two cuts are alike; each is sealed by its mint hash and ranked on a true percentile scale, so the top stays the top forever.',
+  },
   '/vault': {
     heading: 'The Vault',
     paragraph: 'A Grove-powered locker for OG Ohnahji holders. Bring a file, leave with a link only your wallet controls.',
@@ -137,6 +141,7 @@ export const DEFAULT_CONFIG = {
     '/lens': { visible: true, hex: '#3C0010', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/lens'] } },
     '/quotes': { visible: true, hex: '#FE517E', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/quotes'] } },
     '/socials': { visible: true, hex: '#F1C40F', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/socials'] } },
+    '/muralith': { visible: true, hex: '#FE517E', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/muralith'] } },
     '/vault': { visible: true, hex: '#3C0010', gate: 'og', weight: null, copy: { ...DEFAULT_COPY['/vault'] } },
     '/firstlook': { visible: true, hex: '#3C0010', gate: 'og', weight: null, copy: { ...DEFAULT_COPY['/firstlook'] } },
   },

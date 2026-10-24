@@ -93,7 +93,7 @@ describe('merge (server and client agree)', () => {
       expect(merged.slides['/story'].copy.heading).toBe('How We\nGot Here')
       expect(merged.slides['/vault'].gate).toBe('og')
       expect(merged.order[0]).toBe('/')
-      expect(merged.order).toHaveLength(13)
+      expect(merged.order).toHaveLength(14)
       expect(merged.fontWeight).toBeNull()
       expect(merged.features.quotesVoting).toBe(false)
     }
@@ -102,7 +102,7 @@ describe('merge (server and client agree)', () => {
   test('order, gates, weights, and copy merge when well-formed', () => {
     const stored = {
       version: 2,
-      order: ['/', '/quotes', '/story', '/genesis', '/mint', '/community', '/art', '/merch', '/live', '/lens', '/socials', '/vault', '/firstlook'],
+      order: ['/', '/quotes', '/story', '/genesis', '/mint', '/community', '/art', '/merch', '/live', '/lens', '/socials', '/muralith', '/vault', '/firstlook'],
       fontWeight: 300,
       slides: {
         '/art': { gate: 'wallet', weight: 800, copy: { heading: 'New Art', paragraph: 'New intro' } },
@@ -131,7 +131,7 @@ describe('merge (server and client agree)', () => {
     }
     for (const merged of [mergeServer(stored), mergeClient(stored)]) {
       expect(merged.order[0]).toBe('/')
-      expect(merged.order).toHaveLength(13)
+      expect(merged.order).toHaveLength(14)
       expect(merged.fontWeight).toBeNull()
       expect(merged.slides['/art'].gate).toBe('public')
       expect(merged.slides['/art'].weight).toBeNull()

@@ -26,6 +26,7 @@ const Slide8Socials = lazy(() => import('./features/community/Slide6Socials'))
 const SlideVaultLocker = lazy(() => import('./features/vault/SlideVault'))
 const SlideFirstLook = lazy(() => import('./features/firstlook/SlideFirstLook'))
 const SlideAdmin = lazy(() => import('./features/admin/SlideAdmin'))
+const SlideMuralith = lazy(() => import('./features/muralith/SlideMuralith'))
 
 // Shared inner-wrapper class for non-hero slides:
 // px-10 md:px-16 gives doubled gutters vs. the old px-5 on mobile and generous
@@ -73,6 +74,7 @@ const AppContent = () => {
       '/lens': <SlideLensFeed />,
       '/quotes': <SlideQuotesFeed />,
       '/socials': <Slide8Socials />,
+      '/muralith': <SlideMuralith />,
       '/vault': <SlideVaultLocker />,
       '/firstlook': <SlideFirstLook />,
       '/admin': <SlideAdmin />,

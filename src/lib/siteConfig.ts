@@ -112,6 +112,10 @@ export const DEFAULT_COPY: Record<string, SlideCopy> = {
     heading: 'Join the community',
     paragraph: 'Follow us across the web and stay updated on the latest in emerging tech.',
   },
+  '/muralith': {
+    heading: 'Muralith\nmint',
+    paragraph: 'Muralith by Ohnahji crops a single deterministic window from an endless wall where strobe, bass pressure and torn flyers have sedimented into plaster. No two cuts are alike; each is sealed by its mint hash and ranked on a true percentile scale, so the top stays the top forever.',
+  },
   '/vault': {
     heading: 'The Vault',
     paragraph: 'A Grove-powered locker for OG Ohnahji holders. Bring a file, leave with a link only your wallet controls.',
