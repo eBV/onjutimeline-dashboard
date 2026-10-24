@@ -1,3 +1,1 @@
-{
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
-}
+{"rewrites":[{"destination":"/sw.js","source":"/sw.js"},{"destination":"/manifest.json","source":"/manifest.json"},{"destination":"/icon-192.png","source":"/icon-192.png"},{"destination":"/icon-512.png","source":"/icon-512.png"},{"destination":"/apple-touch-icon.png","source":"/apple-touch-icon.png"},{"destination":"/favicon-16.png","source":"/favicon-16.png"},{"destination":"/favicon-32.png","source":"/favicon-32.png"},{"destination":"/ji.png","source":"/ji.png"},{"destination":"/index.html","source":"/(.*)"}]}
