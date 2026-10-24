@@ -37,14 +37,16 @@ describe('merge (server and client agree)', () => {
 
   test('stored values override by merge, both implementations', () => {
     const stored = {
-      version: 1,
+      version: 2,
       slides: { '/story': { visible: false, hex: '#00FF00' }, '/quotes': { hex: '#111111' } },
       features: { quotesVoting: false },
     }
     for (const merged of [mergeServer(stored), mergeClient(stored)]) {
-      expect(merged.slides['/story']).toEqual({ visible: false, hex: '#00FF00' })
-      expect(merged.slides['/quotes']).toEqual({ visible: true, hex: '#111111' })
-      expect(merged.slides['/socials']).toEqual({ visible: true, hex: '#F1C40F' })
+      expect(merged.slides['/story'].visible).toBe(false)
+      expect(merged.slides['/story'].hex).toBe('#00FF00')
+      expect(merged.slides['/quotes'].visible).toBe(true)
+      expect(merged.slides['/quotes'].hex).toBe('#111111')
+      expect(merged.slides['/socials'].hex).toBe('#F1C40F')
       expect(merged.features.quotesVoting).toBe(false)
       expect(merged.features.mintPill).toBe(true)
     }
@@ -56,8 +58,9 @@ describe('merge (server and client agree)', () => {
       features: { mintPill: 1, bogus: false },
     }
     for (const merged of [mergeServer(stored), mergeClient(stored)]) {
-      expect(merged.slides['/story']).toEqual({ visible: true, hex: '#F1C40F' })
-      expect(merged.slides['/art']).toEqual({ visible: true, hex: '#3C0010' })
+      expect(merged.slides['/story'].visible).toBe(true)
+      expect(merged.slides['/story'].hex).toBe('#F1C40F')
+      expect(merged.slides['/art'].hex).toBe('#3C0010')
       expect(merged.features.mintPill).toBe(true)
       expect((merged.features as any).bogus).toBeUndefined()
       expect((merged.slides as any)['/nope']).toBeUndefined()
@@ -69,6 +72,73 @@ describe('merge (server and client agree)', () => {
     expect(mergeServer(stored).slides['/'].visible).toBe(true)
     expect(mergeClient(stored).slides['/'].visible).toBe(true)
   })
+
+  test('the hero slide is forced public even when stored gated', () => {
+    const stored = { slides: { '/': { gate: 'og' } } }
+    expect(mergeServer(stored).slides['/'].gate).toBe('public')
+    expect(mergeClient(stored).slides['/'].gate).toBe('public')
+  })
+
+  test('a version 1 document migrates: new fields fall back to defaults', () => {
+    const stored = {
+      version: 1,
+      slides: { '/story': { visible: false, hex: '#00FF00' } },
+      features: { quotesVoting: false },
+    }
+    for (const merged of [mergeServer(stored), mergeClient(stored)]) {
+      expect(merged.version).toBe(2)
+      expect(merged.slides['/story'].visible).toBe(false)
+      expect(merged.slides['/story'].gate).toBe('public')
+      expect(merged.slides['/story'].weight).toBeNull()
+      expect(merged.slides['/story'].copy.heading).toBe('How We\nGot Here')
+      expect(merged.slides['/vault'].gate).toBe('og')
+      expect(merged.order[0]).toBe('/')
+      expect(merged.order).toHaveLength(13)
+      expect(merged.fontWeight).toBeNull()
+      expect(merged.features.quotesVoting).toBe(false)
+    }
+  })
+
+  test('order, gates, weights, and copy merge when well-formed', () => {
+    const stored = {
+      version: 2,
+      order: ['/', '/quotes', '/story', '/genesis', '/mint', '/community', '/art', '/merch', '/live', '/lens', '/socials', '/vault', '/firstlook'],
+      fontWeight: 300,
+      slides: {
+        '/art': { gate: 'wallet', weight: 800, copy: { heading: 'New Art', paragraph: 'New intro' } },
+        '/quotes': { copy: { heading: 'Board' } },
+      },
+      features: {},
+    }
+    for (const merged of [mergeServer(stored), mergeClient(stored)]) {
+      expect(merged.order[1]).toBe('/quotes')
+      expect(merged.fontWeight).toBe(300)
+      expect(merged.slides['/art'].gate).toBe('wallet')
+      expect(merged.slides['/art'].weight).toBe(800)
+      expect(merged.slides['/art'].copy).toEqual({ heading: 'New Art', paragraph: 'New intro' })
+      expect(merged.slides['/quotes'].copy.heading).toBe('Board')
+      expect(merged.slides['/quotes'].copy.paragraph).toMatch(/ranked by the community/)
+    }
+  })
+
+  test('malformed order, gates, weights, and copy fall back to defaults', () => {
+    const stored = {
+      order: ['/', '/story'],
+      fontWeight: 900,
+      slides: {
+        '/art': { gate: 'everyone', weight: 250, copy: { heading: 'x'.repeat(301), paragraph: 42 } },
+      },
+    }
+    for (const merged of [mergeServer(stored), mergeClient(stored)]) {
+      expect(merged.order[0]).toBe('/')
+      expect(merged.order).toHaveLength(13)
+      expect(merged.fontWeight).toBeNull()
+      expect(merged.slides['/art'].gate).toBe('public')
+      expect(merged.slides['/art'].weight).toBeNull()
+      expect(merged.slides['/art'].copy.heading).toBe('OKOLOTOS & ELEMNTS')
+      expect(merged.slides['/art'].copy.paragraph).toBe('Code-based artistic expression')
+    }
+  })
 })
 
 describe('validation (strict, for writes)', () => {
@@ -77,7 +147,9 @@ describe('validation (strict, for writes)', () => {
   })
 
   test('accepts a partial slides map and missing feature entries', () => {
-    const cfg = { version: 1, slides: { '/story': { visible: false } }, features: {} }
+    const cfg = validConfig()
+    cfg.slides = { '/story': { visible: false } }
+    cfg.features = {}
     expect(validateSiteConfig(cfg).ok).toBe(true)
   })
 
@@ -97,8 +169,32 @@ describe('validation (strict, for writes)', () => {
 
   test('rejects the wrong version', () => {
     const cfg = validConfig()
-    cfg.version = 2
+    cfg.version = 1
     expect(validateSiteConfig(cfg).ok).toBe(false)
+  })
+
+  test('rejects a bad order, gate, weight, and copy', () => {
+    const badOrder = validConfig()
+    badOrder.order = ['/', '/story']
+    expect(validateSiteConfig(badOrder).ok).toBe(false)
+    const heroSecond = validConfig()
+    heroSecond.order = [...heroSecond.order.slice(1), heroSecond.order[0]]
+    expect(validateSiteConfig(heroSecond).ok).toBe(false)
+    const badGate = validConfig()
+    badGate.slides['/art'].gate = 'everyone'
+    expect(validateSiteConfig(badGate).ok).toBe(false)
+    const badWeight = validConfig()
+    badWeight.slides['/art'].weight = 900
+    expect(validateSiteConfig(badWeight).ok).toBe(false)
+    const badFontWeight = validConfig()
+    badFontWeight.fontWeight = 250
+    expect(validateSiteConfig(badFontWeight).ok).toBe(false)
+    const longCopy = validConfig()
+    longCopy.slides['/art'].copy.heading = 'x'.repeat(301)
+    expect(validateSiteConfig(longCopy).ok).toBe(false)
+    const badCopyKey = validConfig()
+    badCopyKey.slides['/art'].copy.subline = 'hi'
+    expect(validateSiteConfig(badCopyKey).ok).toBe(false)
   })
 
   test('rejects an unknown slide path, including /admin', () => {

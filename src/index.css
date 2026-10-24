@@ -230,6 +230,17 @@
   .react-zoom-pan-pinch__content { width: 100% !important; height: 100% !important; }
 }
 
+/* ─── Admin font-weight control ─────────────────────────────────────────── */
+/* A slide header element carrying .slide-copy takes its weight from the
+   --slide-weight variable on its slide wrapper (set by App.tsx from the
+   site config: per-slide override, else sitewide). The class is only
+   added when an override exists, so slides without one keep their
+   designed weights untouched. Unlayered rules beat Tailwind's layered
+   utilities on a specificity tie, so this wins over font-black and
+   font-bold on the same element. Dock, pills, and chrome labels live
+   outside the slide wrappers and never see this variable. */
+.slide-copy { font-weight: var(--slide-weight); }
+
 /* ─── Thirdweb ConnectButton overrides ───────────────────────────────────── */
 [class*="tw-connect-button"],
 [class*="tw-details-button"],
