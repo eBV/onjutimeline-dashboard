@@ -1,3 +1,4 @@
+import { useSlideSettings } from '../../lib/siteConfig'
 import { motion } from 'framer-motion'
 
 const STORE_URL = 'https://ohnahji.creator-spring.com/'
@@ -37,6 +38,8 @@ const FEATURED_ITEMS = [
 ]
 
 const SlideMerch = () => {
+  const { copy, weight } = useSlideSettings('/merch')
+  const copyClass = weight ? ' slide-copy' : ''
   return (
     <div className="min-h-full flex flex-col items-center justify-start pt-20 pb-8 md:py-8">
       <div className="max-w-6xl w-full">
@@ -49,11 +52,11 @@ const SlideMerch = () => {
           <div className="inline-block bg-ohnahji-burgundy text-ohnahji-white px-6 py-2 border-[6px] border-ohnahji-black rounded-2xl mb-6">
             <span className="text-sm font-bold">OFFICIAL MERCH</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-ohnahji-burgundy mb-4">
-            Campus Shop
+          <h1 className={`text-5xl md:text-7xl font-black text-ohnahji-burgundy mb-4${copyClass}`}>
+            {copy.heading}
           </h1>
-          <p className="text-xl text-ohnahji-burgundy/70 font-bold max-w-2xl mx-auto">
-            Rep the first Web3 HBCU. Official Ohnahji U gear from the Campus Shop on Creator Spring.
+          <p className={`text-xl text-ohnahji-burgundy/70 font-bold max-w-2xl mx-auto${copyClass}`}>
+            {copy.paragraph}
           </p>
           <a
             href={STORE_URL}

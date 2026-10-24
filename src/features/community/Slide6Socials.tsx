@@ -1,3 +1,4 @@
+import { useSlideSettings } from '../../lib/siteConfig'
 import { motion } from 'framer-motion'
 import { Twitter, Instagram, MessageCircle, Youtube, Twitch, AtSign, Sprout } from 'lucide-react'
 import { CONTRACT_ADDRESS } from '../../lib/constants'
@@ -8,6 +9,8 @@ import { useSiteConfig } from '../../lib/siteConfig'
 // card is the invite. Farcaster was removed; Kick and Reddit joined, and
 // Threads and Lens cards complete the verified set.
 const Slide6Socials = () => {
+  const { copy, weight } = useSlideSettings('/socials')
+  const copyClass = weight ? ' slide-copy' : ''
   // Owner feature switch (ADMIN tab): off hides the anti-phishing line.
   const { data: siteConfig } = useSiteConfig()
   const showSafetyLine = siteConfig?.features.antiPhishingLine !== false
@@ -45,9 +48,9 @@ const Slide6Socials = () => {
           <div className="absolute top-0 right-0 w-64 h-64 bg-ohnahji-gold/20 rounded-full -translate-y-1/2 translate-x-1/2 -z-0" />
 
           <div className="relative z-10 text-center mb-8 md:mb-10">
-            <h2 className="text-5xl font-black text-ohnahji-burgundy mb-4">Join the community</h2>
-            <p className="text-xl text-ohnahji-burgundy/70 max-w-xl mx-auto">
-              Follow us across the web and stay updated on the latest in emerging tech.
+            <h2 className={`text-5xl font-black text-ohnahji-burgundy mb-4${copyClass}`}>{copy.heading}</h2>
+            <p className={`text-xl text-ohnahji-burgundy/70 max-w-xl mx-auto${copyClass}`}>
+              {copy.paragraph}
             </p>
           </div>
 

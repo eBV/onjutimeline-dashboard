@@ -1,8 +1,11 @@
+import { useSlideSettings } from '../../lib/siteConfig'
 import { motion } from 'framer-motion'
 import { IPFS_CID_OKOLOTO } from '../../lib/constants'
 import ResilientImage from '../../components/ResilientImage'
 
 const Slide4Collections = () => {
+  const { copy, weight } = useSlideSettings('/art')
+  const copyClass = weight ? ' slide-copy' : ''
   const artworks: {
     id: number
     title: string
@@ -67,11 +70,11 @@ const Slide4Collections = () => {
           <div className="inline-block bg-ohnahji-pink text-ohnahji-white px-4 py-1 border-[6px] border-ohnahji-black rounded-2xl mb-3 lg:mb-2 font-sans">
             <span className="text-xs font-bold uppercase tracking-wider">GENERATIVE ART</span>
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-4xl font-black text-ohnahji-gold mb-2 lg:mb-1 leading-none">
-            OKOLOTOS & ELEMNTS
+          <h1 className={`text-4xl md:text-5xl lg:text-4xl font-black text-ohnahji-gold mb-2 lg:mb-1 leading-none${copyClass}`}>
+            {copy.heading}
           </h1>
-          <p className="text-base lg:text-sm text-ohnahji-white font-bold font-sans">
-            Code-based artistic expression
+          <p className={`text-base lg:text-sm text-ohnahji-white font-bold font-sans${copyClass}`}>
+            {copy.paragraph}
           </p>
         </motion.div>
 

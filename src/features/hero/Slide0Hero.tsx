@@ -1,8 +1,12 @@
+import { Fragment } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { useSlideSettings, copyLines } from '../../lib/siteConfig'
 
 const Slide0Hero = () => {
   const navigate = useNavigate()
+  const { copy, weight } = useSlideSettings('/')
+  const copyClass = weight ? ' slide-copy' : ''
 
   return (
     <div className="flex flex-col items-center justify-center text-center relative">
@@ -26,30 +30,38 @@ const Slide0Hero = () => {
           <div className="relative group min-h-[155px] md:min-h-[200px] flex items-center justify-center mt-[10vh] md:mt-0">
             {/* Layer 1: Bottom (Shadow) */}
             <h1
-              className="text-[6rem] sm:text-8xl md:text-[12rem] font-black leading-none text-black absolute translate-x-2 translate-y-2"
+              className={`text-[6rem] sm:text-8xl md:text-[12rem] font-black leading-none text-black absolute translate-x-2 translate-y-2${copyClass}`}
               style={{ WebkitTextStroke: '6px black' }}
             >
-              Ohnahji
+              {copyLines(copy.heading).map((line, i) => (
+                <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>
+              ))}
             </h1>
             {/* Layer 2: Middle (Outline) */}
             <h1
-              className="text-[6rem] sm:text-8xl md:text-[12rem] font-black leading-none text-white absolute"
+              className={`text-[6rem] sm:text-8xl md:text-[12rem] font-black leading-none text-white absolute${copyClass}`}
               style={{ WebkitTextStroke: '6px black' }}
             >
-              Ohnahji
+              {copyLines(copy.heading).map((line, i) => (
+                <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>
+              ))}
             </h1>
             {/* Layer 3: Top (Fill) */}
             <h1
-              className="text-[6rem] sm:text-8xl md:text-[12rem] font-black leading-none text-white relative z-10"
+              className={`text-[6rem] sm:text-8xl md:text-[12rem] font-black leading-none text-white relative z-10${copyClass}`}
               style={{ WebkitTextStroke: '0px' }}
             >
-              Ohnahji
+              {copyLines(copy.heading).map((line, i) => (
+                <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>
+              ))}
             </h1>
           </div>
         </div>
 
-        <p className="text-xl sm:text-3xl md:text-5xl font-bold text-ohnahji-pink max-w-4xl mx-auto leading-tight px-4 mt-3 md:mt-6">
-          Your Homebase For Learning<br />Emerging Technologies
+        <p className={`text-xl sm:text-3xl md:text-5xl font-bold text-ohnahji-pink max-w-4xl mx-auto leading-tight px-4 mt-3 md:mt-6${copyClass}`}>
+          {copyLines(copy.paragraph).map((line, i) => (
+            <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>
+          ))}
         </p>
       </motion.div>
 

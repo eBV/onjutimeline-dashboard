@@ -1,4 +1,6 @@
+import { Fragment } from 'react'
 import { motion } from 'framer-motion'
+import { useSlideSettings, copyLines } from '../../lib/siteConfig'
 
 const chapters = [
   {
@@ -25,6 +27,8 @@ const chapters = [
 ]
 
 const Slide1Story = () => {
+  const { copy, weight } = useSlideSettings('/story')
+  const copyClass = weight ? ' slide-copy' : ''
   return (
     <div className="min-h-full flex flex-col justify-start pt-16 pb-8 md:py-12">
       <motion.div
@@ -36,8 +40,10 @@ const Slide1Story = () => {
         <div className="inline-block bg-ohnahji-burgundy text-ohnahji-white px-5 py-1.5 border-[6px] border-ohnahji-black rounded-2xl mb-4">
           <span className="text-xs font-bold tracking-widest uppercase">Our Story</span>
         </div>
-        <h1 className="text-5xl md:text-7xl font-black text-ohnahji-black leading-none">
-          How We<br />Got Here
+        <h1 className={`text-5xl md:text-7xl font-black text-ohnahji-black leading-none${copyClass}`}>
+          {copyLines(copy.heading).map((line, i) => (
+            <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>
+          ))}
         </h1>
       </motion.div>
 
@@ -69,8 +75,8 @@ const Slide1Story = () => {
           <h3 className="font-black text-lg leading-tight mb-1 text-ohnahji-gold">
             Proof of Culture · 2022
           </h3>
-          <p className="font-bold text-sm leading-relaxed text-ohnahji-white">
-            Ohnahji PFPs #2513 and #2514 exhibited in MoDDA&apos;s Proof of Culture (2022 room, THE DIVERGENCE), curated by Sian A. Morson.
+          <p className={`font-bold text-sm leading-relaxed text-ohnahji-white${copyClass}`}>
+            {copy.paragraph}
           </p>
         </div>
         <a

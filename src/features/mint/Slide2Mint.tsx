@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+import { useSlideSettings, copyLines } from '../../lib/siteConfig'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ConnectButton, useActiveAccount, useSendTransaction } from 'thirdweb/react'
@@ -11,6 +13,8 @@ import ContractChip from '../../components/ContractChip'
 
 
 const Slide2Mint = () => {
+  const { copy, weight } = useSlideSettings('/mint')
+  const copyClass = weight ? ' slide-copy' : ''
   const [quantity, setQuantity] = useState(1)
   const pricePerNFT = 0.005
   const totalPrice = quantity * pricePerNFT
@@ -44,11 +48,13 @@ const Slide2Mint = () => {
           <div className="inline-block bg-ohnahji-pink text-ohnahji-white px-6 py-2 border-[6px] border-ohnahji-black rounded-2xl">
             <span className="text-sm font-bold">Spring 2026</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-ohnahji-gold leading-none">
-            Spring '26<br />drop
+          <h1 className={`text-5xl md:text-7xl font-black text-ohnahji-gold leading-none${copyClass}`}>
+            {copyLines(copy.heading).map((line, i) => (
+              <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>
+            ))}
           </h1>
-          <p className="text-xl text-ohnahji-white font-bold max-w-md">
-            Limited edition mint. Join the revolution.
+          <p className={`text-xl text-ohnahji-white font-bold max-w-md${copyClass}`}>
+            {copy.paragraph}
           </p>
           <div>
             <p className="font-black text-ohnahji-white text-xs uppercase tracking-widest mb-2">Official contract</p>

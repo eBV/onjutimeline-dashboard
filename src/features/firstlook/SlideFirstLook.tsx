@@ -1,3 +1,4 @@
+import { useSlideSettings } from '../../lib/siteConfig'
 import { motion } from 'framer-motion'
 
 // First Look: a holder-only preview room for the two three.js builds in
@@ -56,6 +57,8 @@ const EmbedPanel = ({ title, blurb, src, frameTitle, index }: EmbedPanelProps) =
 )
 
 const SlideFirstLook = () => {
+  const { copy, weight } = useSlideSettings('/firstlook')
+  const copyClass = weight ? ' slide-copy' : ''
   return (
     <div className="min-h-full flex flex-col items-center justify-start pt-20 pb-8 md:py-8">
       <div className="max-w-5xl w-full flex flex-col gap-5">
@@ -68,11 +71,11 @@ const SlideFirstLook = () => {
           <div className="inline-block bg-ohnahji-gold text-ohnahji-black px-6 py-2 border-[6px] border-ohnahji-black rounded-2xl mb-5">
             <span className="text-sm font-bold">HOLDERS ONLY</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-ohnahji-white mb-3">
-            First Look
+          <h1 className={`text-5xl md:text-7xl font-black text-ohnahji-white mb-3${copyClass}`}>
+            {copy.heading}
           </h1>
-          <p className="text-lg md:text-xl text-ohnahji-gold font-bold max-w-2xl mx-auto">
-            Two worlds in the workshop, opened early for OG holders: the Alphites stadium and the new campus.
+          <p className={`text-lg md:text-xl text-ohnahji-gold font-bold max-w-2xl mx-auto${copyClass}`}>
+            {copy.paragraph}
           </p>
         </motion.div>
 

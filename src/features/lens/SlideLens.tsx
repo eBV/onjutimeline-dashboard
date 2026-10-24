@@ -1,3 +1,4 @@
+import { useSlideSettings } from '../../lib/siteConfig'
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 
@@ -75,6 +76,8 @@ const relativeTime = (iso: string): string => {
 }
 
 const SlideLens = () => {
+  const { copy, weight } = useSlideSettings('/lens')
+  const copyClass = weight ? ' slide-copy' : ''
   const { data: posts, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['lens-posts', LENS_ACCOUNT],
     queryFn: fetchLensPosts,
@@ -96,11 +99,11 @@ const SlideLens = () => {
           <div className="inline-block bg-[#ABFE2C] text-ohnahji-black px-6 py-2 border-[6px] border-ohnahji-black rounded-2xl mb-6">
             <span className="text-sm font-bold">LENS CHAIN</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-ohnahji-white mb-4">
-            @ohnahji.lens
+          <h1 className={`text-5xl md:text-7xl font-black text-ohnahji-white mb-4${copyClass}`}>
+            {copy.heading}
           </h1>
-          <p className="text-xl text-ohnahji-gold font-bold">
-            The latest from Ohnahji on Lens, straight from the chain.
+          <p className={`text-xl text-ohnahji-gold font-bold${copyClass}`}>
+            {copy.paragraph}
           </p>
           <a
             href={FOLLOW_URL}

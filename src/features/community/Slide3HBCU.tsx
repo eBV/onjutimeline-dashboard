@@ -1,6 +1,10 @@
+import { Fragment } from 'react'
+import { useSlideSettings, copyLines } from '../../lib/siteConfig'
 import { motion } from 'framer-motion'
 
 const Slide3HBCU = () => {
+  const { copy, weight } = useSlideSettings('/community')
+  const copyClass = weight ? ' slide-copy' : ''
   return (
     <div className="min-h-full flex flex-col items-center justify-start md:justify-center pt-20 pb-8 md:py-8">
       <div className="max-w-6xl w-full grid md:grid-cols-2 gap-6 md:gap-12 items-center">
@@ -13,11 +17,13 @@ const Slide3HBCU = () => {
           <div className="inline-block bg-ohnahji-burgundy text-ohnahji-white px-6 py-2 border-[6px] border-ohnahji-black rounded-2xl">
             <span className="text-sm font-bold">FEBRUARY 2022</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-ohnahji-burgundy leading-none">
-            The HBCU<br />pivot
+          <h1 className={`text-5xl md:text-7xl font-black text-ohnahji-burgundy leading-none${copyClass}`}>
+            {copyLines(copy.heading).map((line, i) => (
+              <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>
+            ))}
           </h1>
-          <p className="text-xl text-ohnahji-burgundy font-bold max-w-md">
-            Education meets innovation. Building the future of creative communities.
+          <p className={`text-xl text-ohnahji-burgundy font-bold max-w-md${copyClass}`}>
+            {copy.paragraph}
           </p>
         </motion.div>
 

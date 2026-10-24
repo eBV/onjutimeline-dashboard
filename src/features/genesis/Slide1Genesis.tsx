@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+import { useSlideSettings, copyLines } from '../../lib/siteConfig'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import NFTGallery from '../../components/NFTGallery'
@@ -12,6 +14,8 @@ interface Slide1GenesisProps {
 }
 
 const Slide1Genesis = ({ totalSupply, onGalleryOpen }: Slide1GenesisProps) => {
+  const { copy, weight } = useSlideSettings('/genesis')
+  const copyClass = weight ? ' slide-copy' : ''
   const [showGallery, setShowGallery] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [previewIds, setPreviewIds] = useState<number[]>([])
@@ -41,11 +45,13 @@ const Slide1Genesis = ({ totalSupply, onGalleryOpen }: Slide1GenesisProps) => {
             <div className="inline-block bg-ohnahji-gold text-ohnahji-black px-6 py-2 border-[6px] border-ohnahji-black rounded-3xl">
               <span className="text-sm font-bold">JANUARY 2022</span>
             </div>
-            <h1 className="text-6xl md:text-8xl font-black text-ohnahji-white leading-none">
-              The<br />Genesis
+            <h1 className={`text-6xl md:text-8xl font-black text-ohnahji-white leading-none${copyClass}`}>
+              {copyLines(copy.heading).map((line, i) => (
+                <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>
+              ))}
             </h1>
-            <p className="text-xl text-ohnahji-white font-medium max-w-md leading-relaxed">
-              MLK Weekend Launch. The beginning of something revolutionary in the NFT space.
+            <p className={`text-xl text-ohnahji-white font-medium max-w-md leading-relaxed${copyClass}`}>
+              {copy.paragraph}
             </p>
             <div className="flex gap-4">
               <button
