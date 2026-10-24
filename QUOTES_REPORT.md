@@ -90,7 +90,13 @@ To make votes persistent, the owner needs to do this once in the Vercel dashboar
 
 ### Wave 2 deploy note
 
-- Filled in after the production deploy and verification complete.
+- Deployed 2026-10-23: snapshot commit `7860300bfbefb0464e3eedce23e54a87fb8a455a` on `eBV/onjutimeline-dashboard` main; production deployment `dpl_Ema2QFm2k5tieKoVmU7mgThbf1Ls` READY (a docs-only follow-up carrying this note succeeds it with identical code).
+- Entry asset: production serves `index-BexJYlWa.js` at 1,810,789 bytes, exactly the local build's entry size, and byte-identical after chunk-hash normalization. The Live and Socials lazy chunks are likewise the same sizes as local (33,378 and 13,381 bytes) and identical after normalization.
+- `GET https://ohnahji-timeline.vercel.app/api/supply` returns `{"totalSupply":5097,"revealed":5067,"maxSupply":9010}` with a fresh `updatedAt` and no stale flag (live RPC read, edge cached).
+- `GET /api/quotes` returns the 317-quote archive with `"storage": "memory"`; `/quotes` returns 200; a forged `POST /api/vote` returns 401 `SIGN_IN_REQUIRED`.
+- Part 3 evidence in the shipped bundle: the production Live chunk contains `WATCH LATEST BROADCAST` and the `player.twitch.tv/?video=` player template; production `/api/twitch` returns videos with numeric `id` fields (the Day 432 VOD, id 2908650559, first) and clips with `embedUrl`.
+- Part 4 evidence: the production Socials chunk contains `name:"Twitter",link:"https://x.com/ohnahji"`.
+- Parts 5 to 8 ride the same entry bundle that was hash-verified above and QA-verified locally (43 of 43 checks); the Quotes deck entry (pink hex) is part of that entry chunk.
 
 ## Daily sync (for the cron the parent wires next)
 
