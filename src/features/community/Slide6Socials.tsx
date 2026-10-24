@@ -1,12 +1,17 @@
 import { motion } from 'framer-motion'
 import { Twitter, Instagram, MessageCircle, Youtube, Twitch, AtSign, Sprout } from 'lucide-react'
 import { CONTRACT_ADDRESS } from '../../lib/constants'
+import { useSiteConfig } from '../../lib/siteConfig'
 
 // Official links only. Discord leads (it is the community home); the big
 // Discord CTA block that used to sit under the grid is gone by design, the
 // card is the invite. Farcaster was removed; Kick and Reddit joined, and
 // Threads and Lens cards complete the verified set.
 const Slide6Socials = () => {
+  // Owner feature switch (ADMIN tab): off hides the anti-phishing line.
+  const { data: siteConfig } = useSiteConfig()
+  const showSafetyLine = siteConfig?.features.antiPhishingLine !== false
+
   const socials: {
     name: string
     link: string
@@ -69,9 +74,11 @@ const Slide6Socials = () => {
         </motion.div>
 
         {/* Trust kit: anti-phishing line. Only official links live here. */}
-        <p className="mt-6 text-center text-ohnahji-black font-bold text-xs sm:text-sm leading-relaxed max-w-2xl mx-auto px-2">
-          Ohnahji will never DM you first, ask for your seed phrase, or ask you to approve unknown contracts. Official links live only on this site.
-        </p>
+        {showSafetyLine && (
+          <p className="mt-6 text-center text-ohnahji-black font-bold text-xs sm:text-sm leading-relaxed max-w-2xl mx-auto px-2">
+            Ohnahji will never DM you first, ask for your seed phrase, or ask you to approve unknown contracts. Official links live only on this site.
+          </p>
+        )}
       </div>
     </div>
   )

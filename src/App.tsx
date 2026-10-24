@@ -9,6 +9,8 @@ import { HolderProvider, useHolderStatus } from './hooks/useHolderStatus'
 import { useSlideScroll } from './hooks/useSlideScroll'
 import NavigationDots from './components/NavigationDots'
 import { visibleSlides, GATED_PATHS, SlideMeta } from './lib/deck'
+import { useSiteConfig, DEFAULT_SITE_CONFIG } from './lib/siteConfig'
+import { isAdminAddress, ADMIN_PATH } from './lib/admin'
 
 const Slide0Hero = lazy(() => import('./features/hero/Slide0Hero'))
 const Slide1Story = lazy(() => import('./features/story/Slide1Story'))
@@ -23,6 +25,7 @@ const SlideQuotesFeed = lazy(() => import('./features/quotes/SlideQuotes'))
 const Slide8Socials = lazy(() => import('./features/community/Slide6Socials'))
 const SlideVaultLocker = lazy(() => import('./features/vault/SlideVault'))
 const SlideFirstLook = lazy(() => import('./features/firstlook/SlideFirstLook'))
+const SlideAdmin = lazy(() => import('./features/admin/SlideAdmin'))
 
 // Shared inner-wrapper class for non-hero slides:
 // px-10 md:px-16 gives doubled gutters vs. the old px-5 on mobile and generous
@@ -45,7 +48,17 @@ const AppContent = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { client, chain, currentSlide, setCurrentSlide, isGalleryOpen, setIsGalleryOpen, totalSupply } = useStore()
-  const { isHolder, isPending } = useHolderStatus()
+  const { isHolder, isPending, address } = useHolderStatus()
+
+  // The owner's live site config (slide visibility, background colours,
+  // feature switches). Until it lands, and if it ever fails, the code
+  // defaults apply, so the deck below is always well-formed.
+  const { data: siteConfigData } = useSiteConfig()
+  const siteConfig = siteConfigData ?? DEFAULT_SITE_CONFIG
+  // The ADMIN slide exists only for the owner's wallet. The address
+  // check is instant once a wallet connects; the config API re-checks
+  // server-side, so this only controls visibility, never access.
+  const isAdmin = isAdminAddress(address)
 
   const slides = useMemo<SlideDef[]>(() => {
     const contentByPath: Record<string, React.ReactNode> = {
@@ -62,13 +75,14 @@ const AppContent = () => {
       '/socials': <Slide8Socials />,
       '/vault': <SlideVaultLocker />,
       '/firstlook': <SlideFirstLook />,
+      '/admin': <SlideAdmin />,
     }
-    return visibleSlides(isHolder).map((meta) => ({
+    return visibleSlides(isHolder, { isAdmin, slideConfig: siteConfig.slides }).map((meta) => ({
       ...meta,
       innerClass: meta.path === '/' ? HERO_INNER : SLIDE_INNER,
       content: contentByPath[meta.path],
     }))
-  }, [isHolder, totalSupply, setIsGalleryOpen])
+  }, [isHolder, isAdmin, siteConfig, totalSupply, setIsGalleryOpen])
 
   // Cold-load grace for gated deep links: at first paint the wallet
   // session has not started restoring yet, so neither "account present"
@@ -115,12 +129,20 @@ const AppContent = () => {
   // restore or the balanceOf read) we wait rather than bounce a
   // possibly-valid gated deep link.
   useEffect(() => {
+    // The ADMIN slide joins the deck the moment the owner's address is
+    // known, which is BEFORE the holder balance resolves; if the gated
+    // pair then appends ahead of it, /admin's index shifts mid-load and
+    // the scroll handler can hijack the navigation to whatever slide
+    // lands on the old index (a cold /admin load parking on /vault).
+    // Like a gated deep link, an /admin load waits for the holder state
+    // to settle so the deck is final before its index is resolved.
+    if (location.pathname === ADMIN_PATH && isPending) return
     const idx = slidePaths.indexOf(location.pathname)
     if (idx !== -1) {
       if (idx !== currentSlide) setCurrentSlide(idx)
       return
     }
-    if (GATED_PATHS.includes(location.pathname) && (isPending || !graceOver)) return
+    if ((GATED_PATHS.includes(location.pathname) || location.pathname === ADMIN_PATH) && (isPending || !graceOver)) return
     navigate('/', { replace: true })
     if (currentSlide !== 0) setCurrentSlide(0)
   }, [location.pathname, slidePaths, currentSlide, isPending, graceOver, navigate, setCurrentSlide])
@@ -172,7 +194,16 @@ const AppContent = () => {
           className="h-full w-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar"
         >
           {slides.map((slide) => (
-            <div key={slide.path} className={`min-w-full h-full snap-start ${slide.shellClass}`}>
+            // The inline background is the slide's effective hex (the
+            // site-config override when one is set, the deck default
+            // otherwise). It paints the same colour the shellClass names,
+            // and wins over it when an override differs, so the slide's
+            // full-bleed background always matches the chrome tint.
+            <div
+              key={slide.path}
+              className={`min-w-full h-full snap-start ${slide.shellClass}`}
+              style={{ backgroundColor: slide.hex }}
+            >
               {/* Per-slide Suspense: a lazily loaded slide (including the
                   gated pair appearing on holder connect) never blanks the
                   rest of the deck while its chunk loads. */}
@@ -199,13 +230,15 @@ const AppContent = () => {
             right: 'calc(0.75rem + env(safe-area-inset-right))',
           }}
         >
-          <button
-            onClick={() => navigate('/mint')}
-            className="bg-ohnahji-pink text-ohnahji-white border-[4px] border-ohnahji-black rounded-xl font-black text-xs px-3 py-2 shadow-neo-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-            aria-label="Go to the mint slide"
-          >
-            MINT
-          </button>
+          {siteConfig.features.mintPill && (
+            <button
+              onClick={() => navigate('/mint')}
+              className="bg-ohnahji-pink text-ohnahji-white border-[4px] border-ohnahji-black rounded-xl font-black text-xs px-3 py-2 shadow-neo-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+              aria-label="Go to the mint slide"
+            >
+              MINT
+            </button>
+          )}
           <ConnectButton
             client={client}
             chain={chain}

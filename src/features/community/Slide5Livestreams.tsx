@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { ExternalLink, Play } from 'lucide-react'
+import { useSiteConfig } from '../../lib/siteConfig'
 
 // Live status, VODs and clips come from the /api/twitch serverless function
 // (Helix via an app token held server-side). When it reports unavailable or
@@ -66,6 +67,11 @@ const Slide5Livestreams = () => {
     refetchOnWindowFocus: false,
   })
   const feedReady = feed && !feed.unavailable
+
+  // Owner feature switch (ADMIN tab): off hides the broadcast and clip
+  // rows below. The player embed above always stays.
+  const { data: siteConfig } = useSiteConfig()
+  const showVodRows = siteConfig?.features.twitchVodRows !== false
 
   return (
     <div className="min-h-full flex flex-col items-center justify-start md:justify-center pt-20 pb-8 md:py-8">
@@ -187,7 +193,7 @@ const Slide5Livestreams = () => {
           )}
         </div>
 
-        {activeTab === 'twitch' && feedReady && feed.videos.length > 0 && (
+        {activeTab === 'twitch' && feedReady && showVodRows && feed.videos.length > 0 && (
           <div className="mt-10">
             <h2 className="text-2xl font-black text-ohnahji-white mb-4">LATEST BROADCASTS</h2>
             <div className="flex gap-4 overflow-x-auto pb-2">
@@ -230,7 +236,7 @@ const Slide5Livestreams = () => {
           </div>
         )}
 
-        {activeTab === 'twitch' && feedReady && feed.clips.length > 0 && (
+        {activeTab === 'twitch' && feedReady && showVodRows && feed.clips.length > 0 && (
           <div className="mt-8">
             <h2 className="text-2xl font-black text-ohnahji-white mb-4">TOP CLIPS</h2>
             <div className="flex gap-4 overflow-x-auto pb-2">

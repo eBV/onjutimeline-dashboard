@@ -5,6 +5,7 @@ import { ConnectButton, useActiveAccount } from 'thirdweb/react'
 import { ChevronUp, ChevronDown } from 'lucide-react'
 import { useStore } from '../../hooks/useStore'
 import { SEED_QUOTES, type SeedQuote } from '../../lib/quotes'
+import { useSiteConfig } from '../../lib/siteConfig'
 
 // The Quotes board: every one-liner pick from the daily stream archive,
 // ranked by community votes. Reading is public. Voting takes any
@@ -68,6 +69,11 @@ const SlideQuotes = () => {
   const { client, chain } = useStore()
   const account = useActiveAccount()
   const address = account?.address
+
+  // Owner feature switch (ADMIN tab): off pauses voting site-wide.
+  // Scores stay readable; the arrows are replaced by a paused note.
+  const { data: siteConfig } = useSiteConfig()
+  const votingEnabled = siteConfig?.features.quotesVoting !== false
 
   const [weekday, setWeekday] = useState('')
   const [month, setMonth] = useState('')
@@ -188,7 +194,7 @@ const SlideQuotes = () => {
   }
 
   const castVote = async (quote: QuoteWithCounts, direction: 1 | -1) => {
-    if (pendingVote) return
+    if (!votingEnabled || pendingVote) return
     if (!account) {
       setVoteNote('Connect a wallet to vote. Reading is free; voting takes any wallet, no OG required.')
       document.getElementById('quotes-connect')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -312,6 +318,11 @@ const SlideQuotes = () => {
               Live vote counts are unavailable right now; the archive below is still fully readable.
             </p>
           )}
+          {!votingEnabled && (
+            <p className="bg-ohnahji-white text-ohnahji-black font-bold text-sm px-4 py-2 border-[4px] border-ohnahji-black rounded-xl max-w-xl text-center">
+              Voting is paused right now. The scores below are frozen as they stand; reading is still free for everyone.
+            </p>
+          )}
         </div>
 
         {/* Filter bar */}
@@ -394,6 +405,16 @@ const SlideQuotes = () => {
                     key={quote.id}
                     className={`neo-card ${cardClass} rounded-3xl p-5 mb-4 break-inside-avoid flex gap-4`}
                   >
+                    {!votingEnabled ? (
+                      <div className="flex flex-col items-center gap-1.5 shrink-0 w-11" aria-label={`Score ${quote.score}`}>
+                        <span className={`font-black text-2xl leading-none ${isDark ? 'text-ohnahji-white' : 'text-ohnahji-black'}`}>
+                          {quote.score}
+                        </span>
+                        <span className={`text-[9px] font-black tracking-widest text-center leading-tight ${isDark ? 'text-ohnahji-white/70' : 'text-ohnahji-burgundy/70'}`}>
+                          VOTING PAUSED
+                        </span>
+                      </div>
+                    ) : (
                     <div className="flex flex-col items-center gap-1 shrink-0" aria-label={`Score ${quote.score}`}>
                       <button
                         onClick={() => castVote(quote, 1)}
@@ -427,6 +448,7 @@ const SlideQuotes = () => {
                         <ChevronDown className="w-5 h-5" strokeWidth={3.5} />
                       </button>
                     </div>
+                    )}
                     <div className="min-w-0">
                       <div className={`font-black text-5xl leading-[0.5] select-none ${isDark ? 'text-ohnahji-gold' : 'text-ohnahji-pink'}`} aria-hidden="true">
                         &ldquo;

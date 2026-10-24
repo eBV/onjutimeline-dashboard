@@ -110,6 +110,20 @@ class KvStore {
   async deleteSession(tokenHash) {
     await this.pipeline([['DEL', `quotes:session:${tokenHash}`]])
   }
+
+  async getSiteConfig() {
+    const [raw] = await this.pipeline([['GET', 'site:config']])
+    if (!raw) return null
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return null
+    }
+  }
+
+  async setSiteConfig(config) {
+    await this.pipeline([['SET', 'site:config', JSON.stringify(config)]])
+  }
 }
 
 class MemoryStore {
@@ -119,6 +133,7 @@ class MemoryStore {
     this.down = new Map()
     this.byQuote = new Map() // quoteId -> Map(address -> direction)
     this.sessions = new Map() // tokenHash -> {address, exp}
+    this.siteConfig = null // the stored site-config document, or null
   }
 
   async getCounts() {
@@ -165,6 +180,14 @@ class MemoryStore {
 
   async deleteSession(tokenHash) {
     this.sessions.delete(tokenHash)
+  }
+
+  async getSiteConfig() {
+    return this.siteConfig
+  }
+
+  async setSiteConfig(config) {
+    this.siteConfig = config
   }
 }
 

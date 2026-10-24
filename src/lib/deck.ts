@@ -17,6 +17,7 @@ export interface SlideMeta {
   hex: string
   shellClass: string
   gated?: boolean
+  adminOnly?: boolean
 }
 
 export const BASE_SLIDES: SlideMeta[] = [
@@ -44,5 +45,45 @@ export const GATED_SLIDES: SlideMeta[] = [
 
 export const GATED_PATHS: string[] = GATED_SLIDES.map((s) => s.path)
 
-export const visibleSlides = (isHolder: boolean): SlideMeta[] =>
-  isHolder ? [...BASE_SLIDES, ...GATED_SLIDES] : [...BASE_SLIDES]
+// The ADMIN slide is stricter than the gated pair: it exists only while
+// the connected wallet is the site owner (src/lib/admin.ts). It is not
+// part of the public deck config, never appears in the site-config
+// document, and can never be toggled off. It appends after the gated
+// pair, at the very end of the deck.
+export const ADMIN_SLIDE: SlideMeta = {
+  path: '/admin',
+  name: 'ADMIN',
+  hex: '#000000',
+  shellClass: 'bg-ohnahji-black',
+  adminOnly: true,
+}
+
+// A partial site-config slide map (src/lib/siteConfig.ts): visibility
+// and background-hex overrides keyed by slide path.
+export interface SlideConfigOverrides {
+  [path: string]: { visible?: boolean; hex?: string } | undefined
+}
+
+export interface DeckOptions {
+  isAdmin?: boolean
+  slideConfig?: SlideConfigOverrides
+}
+
+// The visible deck: holder gating first, then the owner's site-config
+// overrides (hidden slides drop out for EVERY visitor; a hex override
+// replaces the slide's chrome colour, which is what the tint stops,
+// theme-color, and shell background all read), then the admin slide
+// for the owner only. The hero "/" is always visible so the deck can
+// never be empty.
+export const visibleSlides = (isHolder: boolean, opts: DeckOptions = {}): SlideMeta[] => {
+  const configured = (isHolder ? [...BASE_SLIDES, ...GATED_SLIDES] : [...BASE_SLIDES])
+    .filter((slide) => {
+      if (slide.path === '/') return true
+      return opts.slideConfig?.[slide.path]?.visible !== false
+    })
+    .map((slide) => {
+      const hex = opts.slideConfig?.[slide.path]?.hex
+      return hex ? { ...slide, hex } : slide
+    })
+  return opts.isAdmin ? [...configured, ADMIN_SLIDE] : configured
+}
