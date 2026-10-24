@@ -242,9 +242,13 @@
 .slide-copy { font-weight: var(--slide-weight); }
 
 /* ─── Thirdweb ConnectButton overrides ───────────────────────────────────── */
+/* Scoped to the header connect/details buttons ONLY. An earlier version of
+   this rule also matched button[class*="tw-"], which painted every button
+   inside the thirdweb wallet modal gold and is why the modal rendered
+   yellow. The modal itself is themed through thirdweb's public theme API
+   (src/lib/walletTheme.ts); do not re-add a bare tw- selector here. */
 [class*="tw-connect-button"],
-[class*="tw-details-button"],
-button[class*="tw-"] {
+[class*="tw-details-button"] {
   border: 6px solid #000000 !important;
   box-shadow: 8px 8px 0px 0px #000000 !important;
   border-radius: 24px !important;

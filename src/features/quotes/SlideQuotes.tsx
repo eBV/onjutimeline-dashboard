@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { ConnectButton, useActiveAccount } from 'thirdweb/react'
+import { OHNAHJI_WALLET_THEME } from '../../lib/walletTheme'
 import { ChevronUp, ChevronDown } from 'lucide-react'
 import { useStore } from '../../hooks/useStore'
 import { SEED_QUOTES, type SeedQuote } from '../../lib/quotes'
@@ -281,7 +282,7 @@ const SlideQuotes = () => {
               <ConnectButton
                 client={client}
                 chain={chain}
-                theme="light"
+                theme={OHNAHJI_WALLET_THEME}
                 connectButton={{
                   label: 'CONNECT TO VOTE',
                   className:

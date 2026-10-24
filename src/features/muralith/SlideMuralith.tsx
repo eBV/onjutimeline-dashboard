@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ConnectButton, useActiveAccount, useActiveWalletChain, useSendTransaction } from 'thirdweb/react'
+import { OHNAHJI_WALLET_THEME } from '../../lib/walletTheme'
 import { prepareTransaction } from 'thirdweb'
 import { useQuery } from '@tanstack/react-query'
 import { createPublicClient, http } from 'viem'
@@ -417,7 +418,7 @@ const SlideMuralith = () => {
               <ConnectButton
                 client={client}
                 chain={chain}
-                theme="light"
+                theme={OHNAHJI_WALLET_THEME}
                 connectButton={{
                   className:
                     '!w-full !py-4 !bg-ohnahji-gold !text-ohnahji-black !border-[6px] !border-ohnahji-black !rounded-2xl !font-black !shadow-neo hover:!shadow-neo-lg active:!shadow-neo-active !transition-all !text-xl !h-auto !border-solid',

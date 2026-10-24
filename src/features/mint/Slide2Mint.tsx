@@ -3,6 +3,7 @@ import { useSlideSettings, copyLines } from '../../lib/siteConfig'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ConnectButton, useActiveAccount, useSendTransaction } from 'thirdweb/react'
+import { OHNAHJI_WALLET_THEME } from '../../lib/walletTheme'
 import { getContract, prepareContractCall, toWei } from 'thirdweb'
 import { useETHPrice } from '../../hooks/useNFT'
 import { useStore } from '../../hooks/useStore'
@@ -128,7 +129,7 @@ const Slide2Mint = () => {
               <ConnectButton
                 client={client}
                 chain={chain}
-                theme="light"
+                theme={OHNAHJI_WALLET_THEME}
                 connectButton={{
                   className: "!w-full !py-4 !bg-ohnahji-gold !text-ohnahji-black !border-[6px] !border-ohnahji-black !rounded-2xl !font-black !shadow-neo hover:!shadow-neo-lg active:!shadow-neo-active !transition-all !text-xl !h-auto !border-solid",
                   label: "CONNECT WALLET"

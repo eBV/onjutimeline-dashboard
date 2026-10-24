@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { ConnectButton, useActiveAccount } from 'thirdweb/react'
+import { OHNAHJI_WALLET_THEME } from '../../lib/walletTheme'
 import { StorageClient, walletOnly } from '@lens-chain/storage-client'
 import { useStore } from '../../hooks/useStore'
 import { useHolderStatus } from '../../hooks/useHolderStatus'
@@ -169,7 +170,7 @@ const SlideVault = () => {
             <ConnectButton
               client={client}
               chain={chain}
-              theme="light"
+              theme={OHNAHJI_WALLET_THEME}
               connectButton={{
                 className: "!w-full !py-4 !bg-ohnahji-gold !text-ohnahji-black !border-[6px] !border-ohnahji-black !rounded-2xl !font-black !shadow-neo hover:!shadow-neo-lg active:!shadow-neo-active !transition-all !text-xl !h-auto !border-solid",
                 label: "CONNECT WALLET"

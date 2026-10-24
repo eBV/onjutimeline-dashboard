@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect, useCallback, useMemo, useState } from
 import { motion, useTransform, useMotionValueEvent } from 'framer-motion'
 import { BrowserRouter as Router, useLocation, useNavigate } from 'react-router-dom'
 import { ThirdwebProvider, ConnectButton } from 'thirdweb/react'
+import { OHNAHJI_WALLET_THEME } from './lib/walletTheme'
 import './index.css'
 
 import { StoreProvider, useStore } from './hooks/useStore'
@@ -265,7 +266,7 @@ const AppContent = () => {
           <ConnectButton
             client={client}
             chain={chain}
-            theme="light"
+            theme={OHNAHJI_WALLET_THEME}
             connectButton={{
               label: 'CONNECT',
               className: CONNECT_BUTTON_CLASS,
