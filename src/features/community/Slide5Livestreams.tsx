@@ -1,3 +1,4 @@
+import { useSlideSettings } from '../../lib/siteConfig'
 import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
@@ -37,6 +38,8 @@ const formatStart = (iso: string): string =>
   })
 
 const Slide5Livestreams = () => {
+  const { copy, weight } = useSlideSettings('/live')
+  const copyClass = weight ? ' slide-copy' : ''
   const [activeTab, setActiveTab] = useState<'twitch' | 'youtube'>('twitch')
   const [playerMode, setPlayerMode] = useState<PlayerMode>({ kind: 'channel' })
   const playerRef = useRef<HTMLDivElement>(null)
@@ -85,11 +88,11 @@ const Slide5Livestreams = () => {
           <div className="inline-block bg-ohnahji-gold text-ohnahji-black px-6 py-2 border-[6px] border-ohnahji-black rounded-2xl mb-6">
             <span className="text-sm font-bold font-sans">LIVE CONTENT</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-ohnahji-white mb-4">
-            Livestream era
+          <h1 className={`text-5xl md:text-7xl font-black text-ohnahji-white mb-4${copyClass}`}>
+            {copy.heading}
           </h1>
-          <p className="text-xl text-ohnahji-gold font-bold font-sans">
-            Watch live on Twitch and YouTube
+          <p className={`text-xl text-ohnahji-gold font-bold font-sans${copyClass}`}>
+            {copy.paragraph}
           </p>
         </motion.div>
 

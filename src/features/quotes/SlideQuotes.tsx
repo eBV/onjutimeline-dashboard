@@ -1,3 +1,4 @@
+import { useSlideSettings } from '../../lib/siteConfig'
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
@@ -66,6 +67,8 @@ const SELECT_CLASS =
   'bg-ohnahji-white border-[4px] border-ohnahji-black rounded-xl font-black text-xs px-2.5 py-2 shadow-neo-sm cursor-pointer max-w-full'
 
 const SlideQuotes = () => {
+  const { copy, weight } = useSlideSettings('/quotes')
+  const copyClass = weight ? ' slide-copy' : ''
   const { client, chain } = useStore()
   const account = useActiveAccount()
   const address = account?.address
@@ -266,10 +269,9 @@ const SlideQuotes = () => {
           <div className="inline-block bg-ohnahji-gold text-ohnahji-black px-6 py-2 border-[6px] border-ohnahji-black rounded-2xl mb-6">
             <span className="text-sm font-bold">ONE-LINERS</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-ohnahji-black mb-4">The Quotes Board</h1>
-          <p className="text-xl text-ohnahji-burgundy font-bold max-w-2xl mx-auto">
-            Every pick from the daily stream, ranked by the community. Reading is free for everyone;
-            voting takes any connected wallet.
+          <h1 className={`text-5xl md:text-7xl font-black text-ohnahji-black mb-4${copyClass}`}>{copy.heading}</h1>
+          <p className={`text-xl text-ohnahji-burgundy font-bold max-w-2xl mx-auto${copyClass}`}>
+            {copy.paragraph}
           </p>
         </motion.div>
 
@@ -453,7 +455,7 @@ const SlideQuotes = () => {
                       <div className={`font-black text-5xl leading-[0.5] select-none ${isDark ? 'text-ohnahji-gold' : 'text-ohnahji-pink'}`} aria-hidden="true">
                         &ldquo;
                       </div>
-                      <p className="font-black text-lg md:text-xl leading-snug mt-2 break-words">{quote.text}</p>
+                      <p className={`${isDark ? 'font-extrabold' : 'font-black'} text-lg md:text-xl leading-snug mt-2 break-words`}>{quote.text}</p>
                       <div className="flex items-center gap-2 mt-4 flex-wrap">
                         <span className="bg-ohnahji-black text-ohnahji-gold px-2.5 py-1 rounded-full font-black text-[10px] tracking-widest">
                           DAY {quote.day}

@@ -1,3 +1,4 @@
+import { useSlideSettings } from '../../lib/siteConfig'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
@@ -43,6 +44,8 @@ const formatSize = (bytes: number): string => {
 }
 
 const SlideVault = () => {
+  const { copy, weight } = useSlideSettings('/vault')
+  const copyClass = weight ? ' slide-copy' : ''
   const navigate = useNavigate()
   const account = useActiveAccount()
   const { client, chain } = useStore()
@@ -149,11 +152,11 @@ const SlideVault = () => {
           <div className="inline-block bg-ohnahji-gold text-ohnahji-black px-6 py-2 border-[6px] border-ohnahji-black rounded-2xl mb-6">
             <span className="text-sm font-bold">HOLDERS ONLY</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-ohnahji-white mb-4">
-            The Vault
+          <h1 className={`text-5xl md:text-7xl font-black text-ohnahji-white mb-4${copyClass}`}>
+            {copy.heading}
           </h1>
-          <p className="text-xl text-ohnahji-gold font-bold max-w-xl mx-auto">
-            A Grove-powered locker for OG Ohnahji holders. Bring a file, leave with a link only your wallet controls.
+          <p className={`text-xl text-ohnahji-gold font-bold max-w-xl mx-auto${copyClass}`}>
+            {copy.paragraph}
           </p>
         </motion.div>
 
