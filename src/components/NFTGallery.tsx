@@ -19,6 +19,7 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
   const [loading, setLoading] = useState(true)
   const [heroTokenId, setHeroTokenId] = useState(1)
   const [selectedTokenId, setSelectedTokenId] = useState<number | null>(null)
+  const [selectedUnrevealed, setSelectedUnrevealed] = useState(false)
   const [searchInput, setSearchInput] = useState('')
   const [searchError, setSearchError] = useState('')
 
@@ -42,20 +43,37 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
     navigateTo(Math.floor(Math.random() * maxToken) + 1)
   }, [navigateTo, maxToken])
 
+  // Search covers the whole minted supply, not just the revealed range.
+  // Tokens in the unrevealed band (maxToken, supply] are valid lookups:
+  // they open the detail view in its unrevealed state. Only ids past the
+  // live supply are an error, and all feedback is inline and site-styled;
+  // the input is a text field so no native validation bubble can appear.
   const handleSearch = useCallback(() => {
-    const num = parseInt(searchInput.trim(), 10)
-    if (isNaN(num) || num < 1) {
-      setSearchError('Enter a valid token number')
+    const raw = searchInput.trim()
+    if (!/^\d+$/.test(raw)) {
+      setSearchError(`Enter a token number between 1 and ${supply.toLocaleString()}`)
       return
     }
-    if (num > maxToken) {
-      setSearchError(`#${num} is not revealed yet; revealed art runs #1 to #${maxToken}`)
+    const num = parseInt(raw, 10)
+    if (num < 1) {
+      setSearchError(`Enter a token number between 1 and ${supply.toLocaleString()}`)
+      return
+    }
+    if (num > supply) {
+      setSearchError(`That token does not exist yet; ${supply.toLocaleString()} minted so far`)
       return
     }
     setSearchError('')
     setSearchInput('')
+    if (num > maxToken) {
+      setSelectedUnrevealed(true)
+      setSelectedTokenId(num)
+      return
+    }
+    setSelectedUnrevealed(false)
     navigateTo(num)
-  }, [searchInput, maxToken, navigateTo])
+    setSelectedTokenId(num)
+  }, [searchInput, supply, maxToken, navigateTo])
 
   useEffect(() => {
     shuffleHero()
@@ -99,15 +117,18 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
           <form
             onSubmit={(e) => { e.preventDefault(); handleSearch() }}
             className="flex items-center gap-1"
+            noValidate
           >
             <input
-              type="number"
-              min={1}
-              max={maxToken}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="off"
               value={searchInput}
               onChange={(e) => { setSearchInput(e.target.value); setSearchError('') }}
-              placeholder={`#1–${maxToken} revealed`}
-              className="w-24 px-2 py-2 border-[4px] border-ohnahji-black rounded-full font-black text-xs text-center bg-ohnahji-white focus:outline-none focus:border-ohnahji-gold shadow-neo-sm"
+              placeholder={`Search #1–${supply.toLocaleString()}`}
+              aria-label="Search by token number"
+              className="w-32 px-2 py-2 border-[4px] border-ohnahji-black rounded-full font-black text-xs text-center bg-ohnahji-white focus:outline-none focus:border-ohnahji-gold shadow-neo-sm"
             />
             <button
               type="submit"
@@ -127,11 +148,20 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
         </span>
       </div>
 
-      {/* Grid fills remaining space */}
+      {/* Grid fills remaining space. The grid only ever holds revealed
+          tokens; grid clicks are always revealed selections. */}
       <div className="flex-1 overflow-hidden">
-        <NFTGalleryGrid tokens={tokens} heroTokenId={heroTokenId} onSelectToken={setSelectedTokenId} />
+        <NFTGalleryGrid
+          tokens={tokens}
+          heroTokenId={heroTokenId}
+          onSelectToken={(id) => { setSelectedUnrevealed(false); setSelectedTokenId(id) }}
+        />
       </div>
-      <NFTDetailModal tokenId={selectedTokenId} onClose={() => setSelectedTokenId(null)} />
+      <NFTDetailModal
+        tokenId={selectedTokenId}
+        unrevealed={selectedUnrevealed}
+        onClose={() => setSelectedTokenId(null)}
+      />
     </div>
   )
 }

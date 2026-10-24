@@ -45,7 +45,20 @@ const queryClient = new QueryClient({
   },
 })
 
-const fetchTotalSupply = async (): Promise<number> => {
+// Primary source: /api/supply, the server-side cached chain read (edge
+// cached for two minutes, so most visitors never touch an RPC at all).
+// Fallback: the direct public-RPC read below, if the endpoint is
+// unreachable or returns something unusable.
+const fetchTotalSupplyFromApi = async (): Promise<number> => {
+  const response = await fetch('/api/supply')
+  if (!response.ok) throw new Error(`supply API responded ${response.status}`)
+  const data = await response.json()
+  const supply = data?.totalSupply
+  if (Number.isFinite(supply) && supply > 0) return supply
+  throw new Error('supply API returned no usable totalSupply')
+}
+
+const fetchTotalSupplyDirect = async (): Promise<number> => {
   const response = await fetch('https://ethereum-rpc.publicnode.com', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -65,6 +78,14 @@ const fetchTotalSupply = async (): Promise<number> => {
     if (Number.isFinite(supply) && supply > 0) return supply
   }
   throw new Error('Failed to fetch total supply')
+}
+
+export const fetchTotalSupply = async (): Promise<number> => {
+  try {
+    return await fetchTotalSupplyFromApi()
+  } catch {
+    return fetchTotalSupplyDirect()
+  }
 }
 
 const StoreInner: React.FC<{ children: React.ReactNode }> = ({ children }) => {

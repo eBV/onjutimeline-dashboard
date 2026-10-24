@@ -33,7 +33,7 @@ export const BASE_SLIDES: SlideMeta[] = [
   { path: '/lens', name: 'LENS', hex: '#3C0010', shellClass: 'bg-ohnahji-burgundy' },
   // Quotes: white room, colourful cards. Public; voting is wallet
   // sign-in gated (any wallet), not holder gated.
-  { path: '/quotes', name: 'QUOTES', hex: '#FFFFFF', shellClass: 'bg-ohnahji-white' },
+  { path: '/quotes', name: 'QUOTES', hex: '#FE517E', shellClass: 'bg-ohnahji-pink' },
   { path: '/socials', name: 'SOCIALS', hex: '#F1C40F', shellClass: 'bg-ohnahji-gold' },
 ]
 

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
+import { ExternalLink, Play } from 'lucide-react'
 
 // Live status, VODs and clips come from the /api/twitch serverless function
 // (Helix via an app token held server-side). When it reports unavailable or
@@ -8,11 +9,20 @@ import { useQuery } from '@tanstack/react-query'
 interface TwitchFeed {
   live: boolean
   stream: { title: string; viewerCount: number; thumbnailUrl: string; startedAt: string } | null
-  videos: { title: string; url: string; thumbnailUrl: string; duration: string; viewCount: number; createdAt: string }[]
-  clips: { title: string; url: string; thumbnailUrl: string; viewCount: number }[]
+  videos: { id: string; title: string; url: string; thumbnailUrl: string; duration: string; viewCount: number; createdAt: string }[]
+  clips: { id: string; title: string; url: string; embedUrl: string; thumbnailUrl: string; viewCount: number }[]
   nextStream: { title: string; startTime: string } | null
   unavailable?: boolean
 }
+
+// The player has three sources: the live channel, one VOD, or one clip.
+// Twitch's own offline screen has a "watch latest stream" button that is
+// dead inside iframe embeds, so recent broadcasts play in place here
+// instead of relying on it.
+type PlayerMode =
+  | { kind: 'channel' }
+  | { kind: 'video'; id: string }
+  | { kind: 'clip'; embedUrl: string }
 
 const fetchTwitchFeed = async (): Promise<TwitchFeed> => {
   const response = await fetch('/api/twitch')
@@ -27,6 +37,25 @@ const formatStart = (iso: string): string =>
 
 const Slide5Livestreams = () => {
   const [activeTab, setActiveTab] = useState<'twitch' | 'youtube'>('twitch')
+  const [playerMode, setPlayerMode] = useState<PlayerMode>({ kind: 'channel' })
+  const playerRef = useRef<HTMLDivElement>(null)
+
+  const playInPlace = (mode: PlayerMode) => {
+    setPlayerMode(mode)
+    requestAnimationFrame(() => {
+      playerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+  }
+
+  const clipSrc = (embedUrl: string) =>
+    embedUrl.includes('parent=') ? embedUrl : `${embedUrl}${embedUrl.includes('?') ? '&' : '?'}parent=${window.location.hostname}`
+
+  const playerSrc =
+    playerMode.kind === 'video'
+      ? `https://player.twitch.tv/?video=${playerMode.id}&parent=${window.location.hostname}&autoplay=false`
+      : playerMode.kind === 'clip'
+        ? clipSrc(playerMode.embedUrl)
+        : `https://player.twitch.tv/?channel=ohnahji&parent=${window.location.hostname}&muted=true`
 
   const { data: feed } = useQuery({
     queryKey: ['twitch-feed'],
@@ -80,7 +109,7 @@ const Slide5Livestreams = () => {
         </div>
 
         {activeTab === 'twitch' && feedReady && (
-          <div className="mb-6 flex justify-center">
+          <div className="mb-6 flex flex-col items-center gap-4">
             {feed.live && feed.stream ? (
               <div className="inline-flex items-center gap-3 bg-ohnahji-black text-ohnahji-white px-5 py-3 border-[4px] border-ohnahji-gold rounded-full max-w-full">
                 <span className="bg-red-600 text-white text-[11px] font-black px-2.5 py-1 rounded-full animate-pulse shrink-0">LIVE</span>
@@ -94,19 +123,37 @@ const Slide5Livestreams = () => {
             ) : (
               <p className="text-ohnahji-white font-bold text-center">OFFLINE · CATCH THE NEXT ONE LIVE</p>
             )}
+            {playerMode.kind !== 'channel' ? (
+              <button
+                onClick={() => setPlayerMode({ kind: 'channel' })}
+                className="inline-flex items-center gap-2 bg-ohnahji-gold text-ohnahji-black px-5 py-2.5 border-[4px] border-ohnahji-black rounded-full font-black text-xs shadow-neo-sm hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+              >
+                BACK TO LIVE CHANNEL
+              </button>
+            ) : (
+              !feed.live && feed.videos.length > 0 && (
+                <button
+                  onClick={() => playInPlace({ kind: 'video', id: feed.videos[0].id })}
+                  className="inline-flex items-center gap-2 bg-ohnahji-pink text-ohnahji-white px-5 py-2.5 border-[4px] border-ohnahji-black rounded-full font-black text-xs shadow-neo-sm hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                >
+                  <Play className="w-4 h-4" strokeWidth={3} /> WATCH LATEST BROADCAST
+                </button>
+              )
+            )}
           </div>
         )}
 
         <motion.div
           key={activeTab}
+          ref={playerRef}
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
-          className="video-container aspect-video bg-ohnahji-burgundy rounded-3xl overflow-hidden border-[6px] border-ohnahji-black"
+          className="video-container aspect-video bg-ohnahji-burgundy rounded-3xl overflow-hidden border-[6px] border-ohnahji-black scroll-mt-24"
         >
           {activeTab === 'twitch' ? (
             <iframe
-              src={`https://player.twitch.tv/?channel=ohnahji&parent=${window.location.hostname}&muted=true`}
+              src={playerSrc}
               style={{ border: 'none' }}
               allowFullScreen
               title="Twitch Stream"
@@ -145,21 +192,39 @@ const Slide5Livestreams = () => {
             <h2 className="text-2xl font-black text-ohnahji-white mb-4">LATEST BROADCASTS</h2>
             <div className="flex gap-4 overflow-x-auto pb-2">
               {feed.videos.map((video) => (
-                <a
-                  key={video.url}
-                  href={video.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-60 shrink-0 bg-ohnahji-burgundy border-[4px] border-ohnahji-black rounded-2xl overflow-hidden shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg transition-all"
+                <div
+                  key={video.id || video.url}
+                  className="relative w-60 shrink-0 bg-ohnahji-burgundy border-[4px] border-ohnahji-black rounded-2xl overflow-hidden shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg transition-all"
                 >
-                  <div className="aspect-video bg-ohnahji-black overflow-hidden">
-                    <img src={video.thumbnailUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="p-3">
-                    <p className="font-black text-sm text-ohnahji-white leading-tight line-clamp-2">{video.title}</p>
-                    <p className="text-[11px] font-bold text-ohnahji-gold mt-1">{video.duration} · {video.viewCount.toLocaleString()} views</p>
-                  </div>
-                </a>
+                  <button
+                    onClick={() => playInPlace({ kind: 'video', id: video.id })}
+                    className="block w-full text-left"
+                    aria-label={`Play in page: ${video.title}`}
+                  >
+                    <div className="aspect-video bg-ohnahji-black overflow-hidden relative">
+                      <img src={video.thumbnailUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <span className="bg-ohnahji-pink text-ohnahji-white border-[3px] border-ohnahji-black rounded-full p-2.5 shadow-neo-sm">
+                          <Play className="w-5 h-5" strokeWidth={3} />
+                        </span>
+                      </span>
+                    </div>
+                    <div className="p-3 pr-10">
+                      <p className="font-black text-sm text-ohnahji-white leading-tight line-clamp-2">{video.title}</p>
+                      <p className="text-[11px] font-bold text-ohnahji-gold mt-1">{video.duration} · {video.viewCount.toLocaleString()} views</p>
+                    </div>
+                  </button>
+                  <a
+                    href={video.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Open on Twitch: ${video.title}`}
+                    title="Open on Twitch"
+                    className="absolute bottom-3 right-3 text-ohnahji-gold hover:text-ohnahji-white transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" strokeWidth={3} />
+                  </a>
+                </div>
               ))}
             </div>
           </div>
@@ -170,21 +235,39 @@ const Slide5Livestreams = () => {
             <h2 className="text-2xl font-black text-ohnahji-white mb-4">TOP CLIPS</h2>
             <div className="flex gap-4 overflow-x-auto pb-2">
               {feed.clips.map((clip) => (
-                <a
-                  key={clip.url}
-                  href={clip.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-60 shrink-0 bg-ohnahji-burgundy border-[4px] border-ohnahji-black rounded-2xl overflow-hidden shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg transition-all"
+                <div
+                  key={clip.id || clip.url}
+                  className="relative w-60 shrink-0 bg-ohnahji-burgundy border-[4px] border-ohnahji-black rounded-2xl overflow-hidden shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg transition-all"
                 >
-                  <div className="aspect-video bg-ohnahji-black overflow-hidden">
-                    <img src={clip.thumbnailUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="p-3">
-                    <p className="font-black text-sm text-ohnahji-white leading-tight line-clamp-2">{clip.title}</p>
-                    <p className="text-[11px] font-bold text-ohnahji-gold mt-1">{clip.viewCount.toLocaleString()} views</p>
-                  </div>
-                </a>
+                  <button
+                    onClick={() => playInPlace({ kind: 'clip', embedUrl: clip.embedUrl })}
+                    className="block w-full text-left"
+                    aria-label={`Play clip in page: ${clip.title}`}
+                  >
+                    <div className="aspect-video bg-ohnahji-black overflow-hidden relative">
+                      <img src={clip.thumbnailUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <span className="bg-ohnahji-pink text-ohnahji-white border-[3px] border-ohnahji-black rounded-full p-2.5 shadow-neo-sm">
+                          <Play className="w-5 h-5" strokeWidth={3} />
+                        </span>
+                      </span>
+                    </div>
+                    <div className="p-3 pr-10">
+                      <p className="font-black text-sm text-ohnahji-white leading-tight line-clamp-2">{clip.title}</p>
+                      <p className="text-[11px] font-bold text-ohnahji-gold mt-1">{clip.viewCount.toLocaleString()} views</p>
+                    </div>
+                  </button>
+                  <a
+                    href={clip.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Open clip on Twitch: ${clip.title}`}
+                    title="Open on Twitch"
+                    className="absolute bottom-3 right-3 text-ohnahji-gold hover:text-ohnahji-white transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" strokeWidth={3} />
+                  </a>
+                </div>
               ))}
             </div>
           </div>

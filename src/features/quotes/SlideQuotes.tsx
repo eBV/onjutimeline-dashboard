@@ -38,11 +38,14 @@ const signInMessage = (address: string) =>
 const SESSION_FLAG = 'ohnahji-quotes-session'
 const PAGE_SIZE = 30
 
+// Card colours rotate white, gold, burgundy, black. The slide background
+// is brand pink, so pink stays out of the cycle: a pink card would vanish
+// into the background even with its black border.
 const CARD_STYLES = [
   'bg-ohnahji-white text-ohnahji-black',
   'bg-ohnahji-gold text-ohnahji-black',
-  'bg-ohnahji-pink text-ohnahji-black',
   'bg-ohnahji-burgundy text-ohnahji-white',
+  'bg-ohnahji-black text-ohnahji-white',
 ]
 
 const WEEKDAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -277,7 +280,7 @@ const SlideQuotes = () => {
                     '!bg-ohnahji-gold !text-ohnahji-black !border-[4px] !border-ohnahji-black !rounded-xl !font-black !text-xs !px-4 !py-2 !h-auto !shadow-neo-sm !border-solid',
                 }}
               />
-              <p className="text-xs font-bold text-ohnahji-burgundy/70">
+              <p className="text-xs font-bold text-ohnahji-burgundy/90">
                 Connect a wallet to vote. No OG token needed, no transaction, no gas.
               </p>
             </>
@@ -294,28 +297,28 @@ const SlideQuotes = () => {
               </button>
             </div>
           ) : (
-            <p className="text-xs font-bold text-ohnahji-burgundy/70 text-center">
+            <p className="text-xs font-bold text-ohnahji-burgundy/90 text-center">
               Wallet connected as {shortAddress(address)}. Your first vote asks for one free signature
               to start your voting session.
             </p>
           )}
           {voteNote && (
-            <p className="bg-ohnahji-pink text-ohnahji-black font-bold text-sm px-4 py-2 border-[4px] border-ohnahji-black rounded-xl max-w-xl text-center">
+            <p className="bg-ohnahji-white text-ohnahji-black font-bold text-sm px-4 py-2 border-[4px] border-ohnahji-black rounded-xl max-w-xl text-center">
               {voteNote}
             </p>
           )}
           {feedQuery.isError && (
-            <p className="text-xs font-bold text-ohnahji-burgundy/70">
+            <p className="text-xs font-bold text-ohnahji-burgundy/90">
               Live vote counts are unavailable right now; the archive below is still fully readable.
             </p>
           )}
         </div>
 
         {/* Filter bar */}
-        <div className="sticky top-0 z-20 bg-ohnahji-white/95 backdrop-blur-sm py-3 -mx-2 px-2">
+        <div className="sticky top-0 z-20 bg-ohnahji-pink/95 backdrop-blur-sm py-3 -mx-2 px-2">
           <div className="flex flex-wrap items-end gap-2.5 justify-center">
             <label className="flex flex-col gap-1">
-              <span className="text-[10px] font-black tracking-widest text-ohnahji-burgundy/70">WEEKDAY</span>
+              <span className="text-[10px] font-black tracking-widest text-ohnahji-burgundy/90">WEEKDAY</span>
               <select aria-label="Filter by day of week" className={SELECT_CLASS} value={weekday} onChange={(e) => setWeekday(e.target.value)}>
                 <option value="">All days</option>
                 {filterOptions.weekdays.map((w) => (
@@ -324,7 +327,7 @@ const SlideQuotes = () => {
               </select>
             </label>
             <label className="flex flex-col gap-1">
-              <span className="text-[10px] font-black tracking-widest text-ohnahji-burgundy/70">MONTH</span>
+              <span className="text-[10px] font-black tracking-widest text-ohnahji-burgundy/90">MONTH</span>
               <select aria-label="Filter by month" className={SELECT_CLASS} value={month} onChange={(e) => setMonth(e.target.value)}>
                 <option value="">All months</option>
                 {filterOptions.months.map((m) => (
@@ -333,7 +336,7 @@ const SlideQuotes = () => {
               </select>
             </label>
             <label className="flex flex-col gap-1">
-              <span className="text-[10px] font-black tracking-widest text-ohnahji-burgundy/70">YEAR</span>
+              <span className="text-[10px] font-black tracking-widest text-ohnahji-burgundy/90">YEAR</span>
               <select aria-label="Filter by year" className={SELECT_CLASS} value={year} onChange={(e) => setYear(e.target.value)}>
                 <option value="">All years</option>
                 {filterOptions.years.map((y) => (
@@ -342,7 +345,7 @@ const SlideQuotes = () => {
               </select>
             </label>
             <label className="flex flex-col gap-1">
-              <span className="text-[10px] font-black tracking-widest text-ohnahji-burgundy/70">EPISODE</span>
+              <span className="text-[10px] font-black tracking-widest text-ohnahji-burgundy/90">EPISODE</span>
               <select aria-label="Filter by episode" className={SELECT_CLASS} value={episode} onChange={(e) => setEpisode(e.target.value)}>
                 <option value="">All episodes</option>
                 {filterOptions.episodes.map((d) => (
@@ -351,7 +354,7 @@ const SlideQuotes = () => {
               </select>
             </label>
             <label className="flex flex-col gap-1">
-              <span className="text-[10px] font-black tracking-widest text-ohnahji-burgundy/70">SORT</span>
+              <span className="text-[10px] font-black tracking-widest text-ohnahji-burgundy/90">SORT</span>
               <select aria-label="Sort quotes" className={SELECT_CLASS} value={sort} onChange={(e) => setSort(e.target.value as 'BEST' | 'WORST' | 'NEW')}>
                 <option value="BEST">Best</option>
                 <option value="WORST">Worst</option>
@@ -377,7 +380,7 @@ const SlideQuotes = () => {
         {visible.length === 0 ? (
           <div className="neo-card bg-ohnahji-white rounded-3xl p-8 text-center">
             <p className="font-black text-2xl text-ohnahji-burgundy mb-2">No quotes match those filters</p>
-            <p className="font-bold text-ohnahji-burgundy/70">Loosen a filter or two and the board fills back up.</p>
+            <p className="font-bold text-ohnahji-burgundy/90">Loosen a filter or two and the board fills back up.</p>
           </div>
         ) : (
           <>
@@ -385,7 +388,7 @@ const SlideQuotes = () => {
               {visible.slice(0, visibleCount).map((quote, i) => {
                 const mine = myVotes[quote.id] ?? 0
                 const cardClass = CARD_STYLES[i % CARD_STYLES.length]
-                const isDark = cardClass.includes('burgundy')
+                const isDark = cardClass.includes('burgundy') || cardClass.includes('bg-ohnahji-black')
                 return (
                   <article
                     key={quote.id}

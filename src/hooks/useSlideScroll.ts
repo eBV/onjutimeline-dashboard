@@ -61,10 +61,20 @@ export function useSlideScroll({
     navigate(slidePaths[index])
   }, [currentSlide, lockProgrammaticScroll, navigate, slidePaths])
 
-  const handleScroll = useCallback(() => {
+  // Re-derive scrollProgress from the scroller's real geometry. This is
+  // the same formula the scroll handler uses; it also runs outside scroll
+  // events (see the deck-change effect below) because a MotionValue only
+  // updates when told, and the deck can change shape without any scroll.
+  const syncProgressFromGeometry = useCallback(() => {
     if (!containerRef.current) return
     const { scrollLeft, scrollWidth, clientWidth } = containerRef.current
     scrollProgress.set(scrollWidth - clientWidth > 0 ? scrollLeft / (scrollWidth - clientWidth) : 0)
+  }, [scrollProgress])
+
+  const handleScroll = useCallback(() => {
+    if (!containerRef.current) return
+    const { scrollLeft, clientWidth } = containerRef.current
+    syncProgressFromGeometry()
 
     if (isProgrammaticScroll.current) {
       // Release the lock once the smooth scroll lands on its target slide.
@@ -81,7 +91,37 @@ export function useSlideScroll({
         navigate(slidePaths[newSlideIndex], { replace: true })
       }
     }
-  }, [currentSlide, navigate, scrollProgress, slidePaths, unlockProgrammaticScroll])
+  }, [currentSlide, navigate, slidePaths, syncProgressFromGeometry, unlockProgrammaticScroll])
+
+  // Deck-change correction for the chrome tint (Part 5). When the deck
+  // grows or shrinks (a wallet connecting proves or loses holder state),
+  // the tint transform's stops remap, but a parked scroller fires no
+  // scroll event, so scrollProgress keeps its old fraction and the shell
+  // would sit on the wrong colour (parked on Art, 5/9, the remapped
+  // stops put that fraction inside Merch's white). Re-derive progress
+  // from the real geometry once the new slides have laid out, and when
+  // parked exactly on the active slide, snap to its exact stop so the
+  // tint is bit-exact. Mid-swipe blending is untouched: while a swipe or
+  // a programmatic scroll is in flight this does nothing, and an idle
+  // geometry re-derivation equals the value the next scroll event would
+  // compute anyway.
+  useEffect(() => {
+    const correct = () => {
+      if (isProgrammaticScroll.current || !containerRef.current) return
+      syncProgressFromGeometry()
+      const { scrollLeft, clientWidth } = containerRef.current
+      const n = slidePaths.length
+      if (clientWidth > 0 && n > 1 && Math.abs(scrollLeft - currentSlide * clientWidth) < 2) {
+        scrollProgress.set(currentSlide / (n - 1))
+      }
+    }
+    const raf = requestAnimationFrame(correct)
+    const retry = window.setTimeout(correct, 300)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.clearTimeout(retry)
+    }
+  }, [slidePaths, currentSlide, scrollProgress, syncProgressFromGeometry])
 
   const scrollToSlide = useCallback((index: number) => {
     if (!containerRef.current) return

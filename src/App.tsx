@@ -29,7 +29,7 @@ const SlideFirstLook = lazy(() => import('./features/firstlook/SlideFirstLook'))
 // breathing room on wide desktop screens.
 // No justify; each slide's own outer div uses min-h-full + justify-center so
 // content centers when it fits and scrolls from the top when it overflows.
-const SLIDE_INNER = 'h-full overflow-y-auto flex flex-col px-10 md:px-16'
+const SLIDE_INNER = 'h-full overflow-y-auto flex flex-col px-10 md:px-16 slide-scroller'
 const HERO_INNER = 'h-full overflow-hidden flex flex-col items-center justify-center px-10 md:px-16 py-8'
 
 // A visible slide: deck metadata (src/lib/deck.ts) plus its rendered body.
@@ -126,10 +126,14 @@ const AppContent = () => {
   }, [location.pathname, slidePaths, currentSlide, isPending, graceOver, navigate, setCurrentSlide])
 
   // Keep the browser's own chrome tint (theme-color meta) on the settled
-  // slide's colour
+  // slide's colour. The body background is set here too as a backstop
+  // (Part 5): on an index change it snaps to the active slide's hex, so
+  // the paint behind the shell can never sit on the default white while
+  // the interpolated tint catches up after a deck change.
   useEffect(() => {
     const hex = slideHex[currentSlide] ?? slideHex[0]
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', hex)
+    if (hex) document.body.style.backgroundColor = hex
   }, [currentSlide, slideHex])
 
   const onSlideChange = useCallback((index: number) => {
@@ -148,7 +152,7 @@ const AppContent = () => {
     // transition on it: framer already updates it every scroll frame, and a
     // transition would smear that behind the swipe).
     <motion.div
-      className="h-app-shell w-full flex flex-col overflow-hidden"
+      className="h-app-shell w-full relative overflow-hidden"
       style={{
         backgroundColor: chromeColor,
         paddingTop: 'env(safe-area-inset-top)',
@@ -156,7 +160,31 @@ const AppContent = () => {
         paddingRight: 'env(safe-area-inset-right)',
       }}
     >
-      <div className="w-full h-1 bg-transparent z-50 flex-shrink-0">
+      {/* Layer order, back to front (Part 8): the shell tint; the slide
+          viewport, full-bleed across the whole shell height so content
+          scrolls OVER the tint; then the chrome (progress strip, the
+          fixed MINT/wallet row, the nav dock) floating above content.
+          The header and footer no longer exist as layout bands, so
+          nothing clips content at a band boundary any more. */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div
+          ref={containerRef}
+          className="h-full w-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar"
+        >
+          {slides.map((slide) => (
+            <div key={slide.path} className={`min-w-full h-full snap-start ${slide.shellClass}`}>
+              {/* Per-slide Suspense: a lazily loaded slide (including the
+                  gated pair appearing on holder connect) never blanks the
+                  rest of the deck while its chunk loads. */}
+              <Suspense fallback={<div className="h-full flex items-center justify-center text-white font-black">LOADING...</div>}>
+                <div className={slide.innerClass}>{slide.content}</div>
+              </Suspense>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="absolute top-0 left-0 right-0 h-1 bg-transparent z-50 pointer-events-none">
         <motion.div className="h-full bg-ohnahji-gold" style={{ width: progressWidth }} />
       </div>
 
@@ -193,31 +221,20 @@ const AppContent = () => {
         </div>
       )}
 
-      <div className="flex-1 relative overflow-hidden">
-        <div
-          ref={containerRef}
-          className="absolute inset-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar"
-        >
-          {slides.map((slide) => (
-            <div key={slide.path} className={`min-w-full h-full snap-start ${slide.shellClass}`}>
-              {/* Per-slide Suspense: a lazily loaded slide (including the
-                  gated pair appearing on holder connect) never blanks the
-                  rest of the deck while its chunk loads. */}
-              <Suspense fallback={<div className="h-full flex items-center justify-center text-white font-black">LOADING...</div>}>
-                <div className={slide.innerClass}>{slide.content}</div>
-              </Suspense>
-            </div>
-          ))}
-        </div>
+      {/* The dock floats over the full-bleed viewport (Part 8). The
+          wrapper and the component root pass clicks through; only the
+          dock pill assembly itself takes them, so content scrolling
+          beneath the transparent parts of the footer zone stays
+          reachable and the dock never loses a tap to a card under it. */}
+      <div className="absolute bottom-0 left-0 right-0 z-50 pointer-events-none">
+        <NavigationDots
+          totalSlides={slides.length}
+          slideNames={slideNames}
+          isSocials={slides[currentSlide]?.path === '/socials'}
+          currentSlide={currentSlide}
+          onSlideChange={onSlideChange}
+        />
       </div>
-
-      <NavigationDots
-        totalSlides={slides.length}
-        slideNames={slideNames}
-        isSocials={slides[currentSlide]?.path === '/socials'}
-        currentSlide={currentSlide}
-        onSlideChange={onSlideChange}
-      />
     </motion.div>
   )
 }

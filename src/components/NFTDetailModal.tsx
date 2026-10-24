@@ -1,16 +1,20 @@
 import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNFTMetadata } from '../hooks/useNFT'
-import { CONTRACT_ADDRESS, IPFS_CID_GENESIS } from '../lib/constants'
+import { CONTRACT_ADDRESS, IPFS_CID_GENESIS, IPFS_CID_MINT_PLACEHOLDER } from '../lib/constants'
 import ResilientImage from './ResilientImage'
 
 interface NFTDetailModalProps {
   tokenId: number | null
+  // Tokens in the unrevealed band (supply minus 30, supply] render the
+  // placeholder art and NOT REVEALED YET copy instead of chasing art and
+  // metadata that do not exist yet.
+  unrevealed?: boolean
   onClose: () => void
 }
 
-const NFTDetailModal = ({ tokenId, onClose }: NFTDetailModalProps) => {
-  const { data: selectedMeta, isLoading: metaLoading } = useNFTMetadata(tokenId)
+const NFTDetailModal = ({ tokenId, unrevealed = false, onClose }: NFTDetailModalProps) => {
+  const { data: selectedMeta, isLoading: metaLoading } = useNFTMetadata(unrevealed ? null : tokenId)
   const [bgColor, setBgColor] = useState<string | null>(null)
 
   useEffect(() => { setBgColor(null) }, [tokenId])
@@ -58,10 +62,10 @@ const NFTDetailModal = ({ tokenId, onClose }: NFTDetailModalProps) => {
               className="w-full md:w-1/2 h-64 md:h-auto md:aspect-square relative rounded-[2.5rem] overflow-hidden shadow-[20px_20px_0px_0px_rgba(0,0,0,1)]"
             >
               <ResilientImage
-                cid={IPFS_CID_GENESIS}
-                path={`${tokenId}.png`}
+                cid={unrevealed ? IPFS_CID_MINT_PLACEHOLDER : IPFS_CID_GENESIS}
+                path={unrevealed ? 'NoRevealHolder.png' : `${tokenId}.png`}
                 className="w-full h-full object-cover"
-                alt={`Ohnahji #${tokenId}`}
+                alt={unrevealed ? `Ohnahji #${tokenId}, not revealed yet` : `Ohnahji #${tokenId}`}
                 placeholderText={`OHNAHJI #${tokenId}`}
                 cors
                 onArtLoad={(img) => sampleColor(img)}
@@ -88,15 +92,41 @@ const NFTDetailModal = ({ tokenId, onClose }: NFTDetailModalProps) => {
                   Ohnahji #{tokenId}
                 </h2>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="bg-ohnahji-gold text-ohnahji-black px-3 py-1 rounded-full border-2 border-ohnahji-black text-xs font-black uppercase">
-                    Genesis
-                  </span>
+                  {unrevealed ? (
+                    <span className="bg-ohnahji-burgundy text-ohnahji-white px-3 py-1 rounded-full border-2 border-ohnahji-black text-xs font-black uppercase">
+                      Not revealed yet
+                    </span>
+                  ) : (
+                    <span className="bg-ohnahji-gold text-ohnahji-black px-3 py-1 rounded-full border-2 border-ohnahji-black text-xs font-black uppercase">
+                      Genesis
+                    </span>
+                  )}
                   <span className="text-ohnahji-burgundy/40 font-bold uppercase text-xs tracking-widest">
                     Collection
                   </span>
                 </div>
               </div>
 
+              {unrevealed ? (
+                <div className="space-y-4">
+                  <div className="border-b-[6px] border-ohnahji-black pb-2">
+                    <h3 className="text-2xl font-black">HIDDEN UNTIL REVEAL</h3>
+                  </div>
+                  <p className="font-bold text-ohnahji-burgundy/80 leading-snug">
+                    Ohnahji #{tokenId} is minted and on chain, but its art and
+                    traits stay under wraps for now. It sits in the final 30 of
+                    the current supply; the reveal opens them all at once.
+                  </p>
+                  <a
+                    href={`https://opensea.io/assets/ethereum/${CONTRACT_ADDRESS}/${tokenId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="neo-button !py-4 text-center font-black text-xl flex items-center justify-center gap-2"
+                  >
+                    VIEW ON OPENSEA <span className="text-sm">↗</span>
+                  </a>
+                </div>
+              ) : (
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b-[6px] border-ohnahji-black pb-2">
                   <h3 className="text-2xl font-black">TRAITS</h3>
@@ -144,6 +174,7 @@ const NFTDetailModal = ({ tokenId, onClose }: NFTDetailModalProps) => {
                   <p className="text-ohnahji-burgundy/40 italic">No traits found or metadata offline.</p>
                 )}
               </div>
+              )}
 
               <button
                 onClick={onClose}

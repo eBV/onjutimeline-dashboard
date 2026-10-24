@@ -123,6 +123,27 @@
   @media (display-mode: browser) and (max-width: 767px) {
     .dock-footer-pad { padding-bottom: 88px; }
   }
+
+  /* Full-bleed slide scrollers (Part 8). The slide viewport now spans
+     the whole shell height and content scrolls beneath the floating
+     chrome, so each slide's inner scroller carries the clearance the
+     old header/footer bands used to provide: scroll-padding keeps
+     scrolled-to content out from behind the fixed pills (top) and the
+     dock (bottom), and a matching padding-bottom guarantees the last
+     row can always scroll fully clear of the dock at rest. In browser
+     mode on phone widths the bottom clearance grows by the same 88px
+     the dock itself lifts by, so the two stay in step. */
+  .slide-scroller {
+    scroll-padding-top: calc(5rem + env(safe-area-inset-top));
+    scroll-padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+  }
+  @media (display-mode: browser) and (max-width: 767px) {
+    .slide-scroller {
+      scroll-padding-bottom: calc(8rem + 88px);
+      padding-bottom: calc(8rem + 88px);
+    }
+  }
 }
 
 @utility container {

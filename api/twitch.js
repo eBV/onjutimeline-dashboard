@@ -101,6 +101,7 @@ export default async function handler(req, res) {
         : null,
       channel: { login: CHANNEL_LOGIN, id: BROADCASTER_ID },
       videos: (videos?.data ?? []).map((v) => ({
+        id: v.id,
         title: v.title,
         url: v.url,
         thumbnailUrl: sizedThumb(v.thumbnail_url),
@@ -109,8 +110,10 @@ export default async function handler(req, res) {
         createdAt: v.created_at,
       })),
       clips: (clips?.data ?? []).map((c) => ({
+        id: c.id,
         title: c.title,
         url: c.url,
+        embedUrl: c.embed_url,
         thumbnailUrl: sizedThumb(c.thumbnail_url),
         viewCount: c.view_count,
       })),

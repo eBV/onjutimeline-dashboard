@@ -15,7 +15,7 @@ const Slide6Socials = () => {
     textClass?: string
   }[] = [
     { name: 'Discord', link: 'https://discord.com/invite/3ahyqHkhc7', icon: <MessageCircle size={30} />, color: 'bg-[#5865F2]' },
-    { name: 'X', link: 'https://x.com/ohnahji', icon: <Twitter size={30} />, color: 'bg-[#000000]' },
+    { name: 'Twitter', link: 'https://x.com/ohnahji', icon: <Twitter size={30} />, color: 'bg-[#000000]' },
     { name: 'Instagram', link: 'https://instagram.com/ohnahji', icon: <Instagram size={30} />, color: 'bg-[#E1306C]' },
     { name: 'Threads', link: 'https://www.threads.net/@ohnahji', icon: <AtSign size={30} />, color: 'bg-[#111111]' },
     { name: 'YouTube', link: 'https://youtube.com/@ohnahji', icon: <Youtube size={30} />, color: 'bg-[#FF0000]' },

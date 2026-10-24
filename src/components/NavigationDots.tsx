@@ -18,13 +18,13 @@ const NavigationDots = ({ totalSlides, slideNames, isSocials, currentSlide, onSl
       // safe-area formula everywhere, lifted to a fixed 88px in browser mode
       // on phone widths so iOS Safari's floating toolbar cannot cover the
       // dock. Left/right keep their inline safe-area calc.
-      className="w-full flex items-center justify-center px-4 pt-3 z-50 dock-footer-pad"
+      className="w-full flex items-center justify-center px-4 pt-3 z-50 dock-footer-pad pointer-events-none"
       style={{
         paddingLeft: 'calc(1rem + env(safe-area-inset-left))',
         paddingRight: 'calc(1rem + env(safe-area-inset-right))',
       }}
     >
-      <div className="relative">
+      <div className="relative pointer-events-auto">
         {/* Active-slide nameplate. Previously this label hung off whichever
             dot was active, so on the first/last slides it sat at the screen
             edge, half-clipped and visually detached from the dock. It is now
