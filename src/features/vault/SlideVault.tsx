@@ -2,18 +2,18 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { ConnectButton, useActiveAccount } from 'thirdweb/react'
-import { useQuery } from '@tanstack/react-query'
 import { StorageClient, walletOnly } from '@lens-chain/storage-client'
 import { useStore } from '../../hooks/useStore'
-import { CONTRACT_ADDRESS } from '../../lib/constants'
+import { useHolderStatus } from '../../hooks/useHolderStatus'
 
 // Grove Vault v1: a holder-gated file locker on Grove (Lens storage).
-// The gate is a site-side balanceOf read on the OG contract; uploads go to
-// Grove with a walletOnly ACL bound to Ethereum mainnet (chain id 1), so
-// only the uploading wallet can edit or delete them. Grove content is
-// publicly readable by link; see the caveat copy in the vault UI.
+// The gate is the app-level balanceOf read on the OG contract (shared via
+// useHolderStatus; it also decides whether this slide exists in the deck
+// at all). Uploads go to Grove with a walletOnly ACL bound to Ethereum
+// mainnet (chain id 1), so only the uploading wallet can edit or delete
+// them. Grove content is publicly readable by link; see the caveat copy
+// in the vault UI.
 
-const RPC_URL = 'https://ethereum-rpc.publicnode.com'
 const STORAGE_KEY = 'grove-vault-uploads-v1'
 const MAX_FILE_BYTES = 125 * 1024 * 1024 // Grove upload limit: 125 MB
 
@@ -24,25 +24,6 @@ interface VaultUpload {
   size: number
   uploadedAt: number
   address: string
-}
-
-const fetchBalance = async (address: string): Promise<number> => {
-  const data = '0x70a08231' + address.slice(2).toLowerCase().padStart(64, '0')
-  const response = await fetch(RPC_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'eth_call',
-      params: [{ to: CONTRACT_ADDRESS, data }, 'latest'],
-    }),
-  })
-  if (!response.ok) throw new Error(`RPC responded ${response.status}`)
-  const json = await response.json()
-  const balance = parseInt(json?.result, 16)
-  if (!Number.isFinite(balance)) throw new Error('Could not read your balance')
-  return balance
 }
 
 const loadUploads = (): VaultUpload[] => {
@@ -96,17 +77,11 @@ const SlideVault = () => {
     }
   }, [uploads])
 
-  const balanceQuery = useQuery({
-    queryKey: ['vault-balance', address],
-    queryFn: () => fetchBalance(address as string),
-    enabled: !!address,
-    staleTime: 1000 * 60,
-    retry: 1,
-    refetchOnWindowFocus: false,
-  })
+  const holder = useHolderStatus()
+  const balance = holder.balance
+  const isHolder = holder.isHolder
 
   const myUploads = address ? uploads.filter((u) => u.address.toLowerCase() === address.toLowerCase()) : []
-  const isHolder = (balanceQuery.data ?? 0) > 0
 
   const handleUpload = async () => {
     if (!file || !address) return
@@ -198,16 +173,16 @@ const SlideVault = () => {
               }}
             />
           </div>
-        ) : balanceQuery.isLoading ? (
+        ) : holder.isChecking ? (
           <div className="text-center py-16" role="status" aria-label="Checking holder status">
             <p className="text-ohnahji-white text-2xl font-black animate-pulse">CHECKING YOUR PASS...</p>
           </div>
-        ) : balanceQuery.isError ? (
+        ) : holder.isError ? (
           <div className="neo-card bg-ohnahji-white rounded-3xl p-8 text-center">
             <p className="font-black text-2xl text-ohnahji-burgundy mb-2">Could not check the chain</p>
             <p className="font-bold text-ohnahji-burgundy/70 mb-6">The holder check did not go through. Give it another try.</p>
             <button
-              onClick={() => balanceQuery.refetch()}
+              onClick={() => holder.refetch()}
               className="bg-ohnahji-pink text-ohnahji-white px-6 py-3 border-[6px] border-ohnahji-black rounded-full font-black text-sm shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg transition-all"
             >
               RETRY
@@ -231,7 +206,7 @@ const SlideVault = () => {
             <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
               <h2 className="font-black text-2xl text-ohnahji-burgundy">You are in</h2>
               <span className="bg-ohnahji-gold text-ohnahji-black text-xs font-black px-3 py-1 rounded-full border-2 border-ohnahji-black">
-                {balanceQuery.data} OG PFP{(balanceQuery.data ?? 0) === 1 ? '' : 'S'} HELD
+                {balance} OG PFP{(balance ?? 0) === 1 ? '' : 'S'} HELD
               </span>
             </div>
 

@@ -1,20 +1,30 @@
 import { motion } from 'framer-motion'
-import { Twitter, Instagram, MessageCircle, Youtube, Twitch } from 'lucide-react'
+import { Twitter, Instagram, MessageCircle, Youtube, Twitch, AtSign, Sprout } from 'lucide-react'
 import { CONTRACT_ADDRESS } from '../../lib/constants'
 
+// Official links only. Discord leads (it is the community home); the big
+// Discord CTA block that used to sit under the grid is gone by design, the
+// card is the invite. Farcaster was removed; Kick and Reddit joined, and
+// Threads and Lens cards complete the verified set.
 const Slide6Socials = () => {
-  const web2Socials = [
-    { name: 'Discord', link: 'https://discord.com/invite/3ahyqHkhc7', icon: <MessageCircle size={28} />, color: 'bg-[#5865F2]' },
-    { name: 'Twitter', link: 'https://twitter.com/ohnahji', icon: <Twitter size={28} />, color: 'bg-[#1DA1F2]' },
-    { name: 'Instagram', link: 'https://instagram.com/ohnahji', icon: <Instagram size={28} />, color: 'bg-[#E1306C]' },
-    { name: 'YouTube', link: 'https://youtube.com/@ohnahji', icon: <Youtube size={28} />, color: 'bg-[#FF0000]' },
-    { name: 'Twitch', link: 'https://twitch.tv/ohnahji', icon: <Twitch size={28} />, color: 'bg-[#9146FF]' },
-    { name: 'Farcaster', link: 'https://farcaster.xyz/ohnahji', icon: <span className="text-2xl font-black">⬡</span>, color: 'bg-[#8A63D2]' },
-  ]
-
-  const web3Socials = [
-    { name: 'OpenSea', link: 'https://opensea.io/collection/ohnahji', icon: '🌊', color: 'bg-[#2081E2]' },
-    { name: 'Etherscan', link: `https://etherscan.io/address/${CONTRACT_ADDRESS}`, icon: '🔍', color: 'bg-[#21325E]' },
+  const socials: {
+    name: string
+    link: string
+    icon: React.ReactNode
+    color: string
+    textClass?: string
+  }[] = [
+    { name: 'Discord', link: 'https://discord.com/invite/3ahyqHkhc7', icon: <MessageCircle size={30} />, color: 'bg-[#5865F2]' },
+    { name: 'X', link: 'https://x.com/ohnahji', icon: <Twitter size={30} />, color: 'bg-[#000000]' },
+    { name: 'Instagram', link: 'https://instagram.com/ohnahji', icon: <Instagram size={30} />, color: 'bg-[#E1306C]' },
+    { name: 'Threads', link: 'https://www.threads.net/@ohnahji', icon: <AtSign size={30} />, color: 'bg-[#111111]' },
+    { name: 'YouTube', link: 'https://youtube.com/@ohnahji', icon: <Youtube size={30} />, color: 'bg-[#FF0000]' },
+    { name: 'Twitch', link: 'https://twitch.tv/ohnahji', icon: <Twitch size={30} />, color: 'bg-[#9146FF]' },
+    { name: 'Kick', link: 'https://kick.com/ohnahji', icon: <span className="text-[28px] leading-none font-black">K</span>, color: 'bg-[#53FC18]', textClass: 'text-ohnahji-black' },
+    { name: 'Reddit', link: 'https://www.reddit.com/r/Ohnahji/', icon: <span className="text-[26px] leading-none font-black">r/</span>, color: 'bg-[#FF4500]' },
+    { name: 'Lens', link: 'https://orb.club/@ohnahji', icon: <Sprout size={30} />, color: 'bg-[#ABFE2C]', textClass: 'text-ohnahji-black' },
+    { name: 'OpenSea', link: 'https://opensea.io/collection/ohnahji', icon: <span className="text-[26px] leading-none">🌊</span>, color: 'bg-[#2081E2]' },
+    { name: 'Etherscan', link: `https://etherscan.io/address/${CONTRACT_ADDRESS}`, icon: <span className="text-[26px] leading-none">🔍</span>, color: 'bg-[#21325E]' },
   ]
 
   return (
@@ -24,54 +34,37 @@ const Slide6Socials = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
-          className="neo-card bg-ohnahji-white p-6 md:p-12 rounded-[3.5rem] relative overflow-hidden"
+          className="neo-card bg-ohnahji-white p-6 md:p-10 rounded-[3.5rem] relative overflow-hidden"
         >
           {/* Background decoration */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-ohnahji-gold/20 rounded-full -translate-y-1/2 translate-x-1/2 -z-0" />
 
-          <div className="relative z-10 text-center mb-12">
+          <div className="relative z-10 text-center mb-8 md:mb-10">
             <h2 className="text-5xl font-black text-ohnahji-burgundy mb-4">Join the community</h2>
             <p className="text-xl text-ohnahji-burgundy/70 max-w-xl mx-auto">
               Follow us across the web and stay updated on the latest in emerging tech.
             </p>
           </div>
 
-          <div className="relative z-10">
-            {/* Social links grid */}
-            <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mb-6">
-              {[...web2Socials, ...web3Socials].map((social, index) => (
-                <motion.a
-                  key={social.name}
-                  href={social.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  whileHover={{ scale: 1.05 }}
-                  className={`${social.color} p-3 flex flex-col items-center gap-1.5 rounded-2xl border-[4px] border-ohnahji-black shadow-neo hover:shadow-neo-lg transition-all text-white`}
-                >
-                  <span>{social.icon}</span>
-                  <span className="font-bold text-xs tracking-wide font-sans text-center leading-tight">{social.name}</span>
-                </motion.a>
-              ))}
-            </div>
-
-            {/* CTA section */}
-            <div className="flex flex-col gap-4 p-4 md:p-6 bg-ohnahji-burgundy rounded-[2rem] border-[6px] border-ohnahji-black shadow-neo text-white">
-              <div>
-                <h3 className="text-2xl font-black text-ohnahji-gold">Become a member</h3>
-                <p className="font-bold text-ohnahji-white/80 font-sans text-sm">Exclusive access to our community and events.</p>
-              </div>
-              <a
-                href="https://discord.com/invite/3ahyqHkhc7"
+          {/* Link cards fill the space the old Discord CTA block used:
+              flex-wrap centres the short last row instead of stranding it. */}
+          <div className="relative z-10 flex flex-wrap justify-center gap-3 md:gap-4">
+            {socials.map((social, index) => (
+              <motion.a
+                key={social.name}
+                href={social.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-3 bg-ohnahji-pink text-white border-[6px] border-ohnahji-black shadow-neo hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-neo-lg active:translate-x-[2px] active:translate-y-[2px] active:shadow-neo-active transition-all text-center font-black text-lg rounded-2xl font-sans neo-button-flood"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                whileHover={{ scale: 1.05 }}
+                className={`${social.color} ${social.textClass ?? 'text-white'} w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.75rem)] lg:w-[calc(25%-0.75rem)] px-3 py-5 flex flex-col items-center justify-center gap-2 rounded-2xl border-[4px] border-ohnahji-black shadow-neo hover:shadow-neo-lg transition-all`}
               >
-                Join Discord
-              </a>
-            </div>
+                <span className="h-[30px] flex items-center">{social.icon}</span>
+                <span className="font-bold text-sm tracking-wide font-sans text-center leading-tight">{social.name}</span>
+              </motion.a>
+            ))}
           </div>
         </motion.div>
 

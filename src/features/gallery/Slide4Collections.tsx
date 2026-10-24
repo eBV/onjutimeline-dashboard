@@ -56,21 +56,21 @@ const Slide4Collections = () => {
   ]
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-start md:justify-center pt-20 pb-8 md:py-4">
+    <div className="min-h-full flex flex-col items-center justify-start md:justify-center pt-20 pb-8 md:py-4 lg:py-2">
       <div className="max-w-5xl w-full flex flex-col">
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-3 md:mb-5"
+          className="text-center mb-3 md:mb-5 lg:mb-3"
         >
-          <div className="inline-block bg-ohnahji-pink text-ohnahji-white px-4 py-1 border-[6px] border-ohnahji-black rounded-2xl mb-3 font-sans">
+          <div className="inline-block bg-ohnahji-pink text-ohnahji-white px-4 py-1 border-[6px] border-ohnahji-black rounded-2xl mb-3 lg:mb-2 font-sans">
             <span className="text-xs font-bold uppercase tracking-wider">GENERATIVE ART</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-ohnahji-gold mb-2 leading-none">
+          <h1 className="text-4xl md:text-5xl lg:text-4xl font-black text-ohnahji-gold mb-2 lg:mb-1 leading-none">
             OKOLOTOS & ELEMNTS
           </h1>
-          <p className="text-base text-ohnahji-white font-bold font-sans">
+          <p className="text-base lg:text-sm text-ohnahji-white font-bold font-sans">
             Code-based artistic expression
           </p>
         </motion.div>
@@ -88,7 +88,7 @@ const Slide4Collections = () => {
               whileHover={{ scale: 1.02, zIndex: 10 }}
               className={`neo-card p-2 bg-gradient-to-br ${art.color} rounded-2xl cursor-pointer group flex flex-col gap-2`}
             >
-              <div className="w-full aspect-square border-4 border-ohnahji-black rounded-xl overflow-hidden bg-white/20">
+              <div className="w-full aspect-square lg:aspect-auto lg:h-[23vh] border-4 border-ohnahji-black rounded-xl overflow-hidden bg-white/20">
                 {art.ipfs ? (
                   <ResilientImage
                     cid={art.ipfs.cid}
@@ -107,7 +107,7 @@ const Slide4Collections = () => {
                   />
                 )}
               </div>
-              <div className="bg-ohnahji-white border-4 border-ohnahji-black px-3 py-2 rounded-lg shadow-neo-sm group-hover:shadow-neo transition-all">
+              <div className="bg-ohnahji-white border-4 border-ohnahji-black px-3 py-2 lg:py-1.5 rounded-lg shadow-neo-sm group-hover:shadow-neo transition-all">
                 <p className="font-black font-sans uppercase text-sm md:text-[11px] tracking-tighter text-center">{art.title}</p>
               </div>
             </motion.a>

@@ -1,12 +1,14 @@
-import { Suspense, lazy, useEffect, useCallback } from 'react'
-import { motion, useTransform } from 'framer-motion'
+import React, { Suspense, lazy, useEffect, useCallback, useMemo, useState } from 'react'
+import { motion, useTransform, useMotionValueEvent } from 'framer-motion'
 import { BrowserRouter as Router, useLocation, useNavigate } from 'react-router-dom'
 import { ThirdwebProvider, ConnectButton } from 'thirdweb/react'
 import './index.css'
 
 import { StoreProvider, useStore } from './hooks/useStore'
+import { HolderProvider, useHolderStatus } from './hooks/useHolderStatus'
 import { useSlideScroll } from './hooks/useSlideScroll'
 import NavigationDots from './components/NavigationDots'
+import { visibleSlides, GATED_PATHS, SlideMeta } from './lib/deck'
 
 const Slide0Hero = lazy(() => import('./features/hero/Slide0Hero'))
 const Slide1Story = lazy(() => import('./features/story/Slide1Story'))
@@ -17,45 +19,9 @@ const Slide5Collections = lazy(() => import('./features/gallery/Slide4Collection
 const SlideMerchShop = lazy(() => import('./features/merch/SlideMerch'))
 const Slide6Livestreams = lazy(() => import('./features/community/Slide5Livestreams'))
 const SlideLensFeed = lazy(() => import('./features/lens/SlideLens'))
-const Slide7Watch = lazy(() => import('./features/watch/Slide6Watch'))
 const Slide8Socials = lazy(() => import('./features/community/Slide6Socials'))
 const SlideVaultLocker = lazy(() => import('./features/vault/SlideVault'))
-
-const SLIDE_PATHS = ['/', '/story', '/genesis', '/mint', '/community', '/art', '/merch', '/live', '/lens', '/watch', '/socials', '/vault']
-
-// Browser chrome colour per slide; written to the theme-color meta tag and
-// the document body background so mobile browser UI matches the slide.
-const SLIDE_HEX = [
-  '#3C0010', // 0: hero (burgundy)
-  '#F1C40F', // 1: story (gold)
-  '#FE517E', // 2: genesis (pink)
-  '#3C0010', // 3: mint (burgundy)
-  '#FE517E', // 4: hbcu (pink)
-  '#3C0010', // 5: collections (burgundy)
-  '#FFFFFF', // 6: merch (white)
-  '#FE517E', // 7: live (pink)
-  '#000000', // 8: lens (black; new slide, Lens-green accents in-slide)
-  '#3C0010', // 9: watch (burgundy)
-  '#F1C40F', // 10: socials (gold)
-  '#3C0010', // 11: vault (burgundy)
-]
-
-// Background colour per slide; applied to the outer shell so the nav footer
-// and progress-bar header area always match the visible slide's colour.
-const SLIDE_BG = [
-  'bg-ohnahji-burgundy', // 0: hero
-  'bg-ohnahji-gold',     // 1: story
-  'bg-ohnahji-pink',     // 2: genesis
-  'bg-ohnahji-burgundy', // 3: mint
-  'bg-ohnahji-pink',     // 4: hbcu
-  'bg-ohnahji-burgundy', // 5: collections
-  'bg-ohnahji-white',    // 6: merch
-  'bg-ohnahji-pink',     // 7: live
-  'bg-ohnahji-black',    // 8: lens
-  'bg-ohnahji-burgundy', // 9: watch
-  'bg-ohnahji-gold',     // 10: socials
-  'bg-ohnahji-burgundy', // 11: vault
-]
+const SlideFirstLook = lazy(() => import('./features/firstlook/SlideFirstLook'))
 
 // Shared inner-wrapper class for non-hero slides:
 // px-10 md:px-16 gives doubled gutters vs. the old px-5 on mobile and generous
@@ -63,6 +29,13 @@ const SLIDE_BG = [
 // No justify; each slide's own outer div uses min-h-full + justify-center so
 // content centers when it fits and scrolls from the top when it overflows.
 const SLIDE_INNER = 'h-full overflow-y-auto flex flex-col px-10 md:px-16'
+const HERO_INNER = 'h-full overflow-hidden flex flex-col items-center justify-center px-10 md:px-16 py-8'
+
+// A visible slide: deck metadata (src/lib/deck.ts) plus its rendered body.
+interface SlideDef extends SlideMeta {
+  innerClass: string
+  content: React.ReactNode
+}
 
 // Shared styling for the fixed wallet button (connect + connected states)
 const CONNECT_BUTTON_CLASS = '!bg-ohnahji-gold !text-ohnahji-black !border-[4px] !border-ohnahji-black !rounded-xl !font-black !text-xs !px-3 !py-1.5 !h-auto !shadow-neo-sm !border-solid hover:!shadow-none hover:!translate-x-[2px] hover:!translate-y-[2px] !transition-all'
@@ -71,25 +44,95 @@ const AppContent = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { client, chain, currentSlide, setCurrentSlide, isGalleryOpen, setIsGalleryOpen, totalSupply } = useStore()
+  const { isHolder, isPending } = useHolderStatus()
 
-  const { containerRef, scrollProgress } = useSlideScroll({ slidePaths: SLIDE_PATHS, currentSlide, isGalleryOpen, navigate })
+  const slides = useMemo<SlideDef[]>(() => {
+    const contentByPath: Record<string, React.ReactNode> = {
+      '/': <Slide0Hero />,
+      '/story': <Slide1Story />,
+      '/genesis': <Slide2Genesis totalSupply={totalSupply} onGalleryOpen={setIsGalleryOpen} />,
+      '/mint': <Slide3Mint />,
+      '/community': <Slide4HBCU />,
+      '/art': <Slide5Collections />,
+      '/merch': <SlideMerchShop />,
+      '/live': <Slide6Livestreams />,
+      '/lens': <SlideLensFeed />,
+      '/socials': <Slide8Socials />,
+      '/vault': <SlideVaultLocker />,
+      '/firstlook': <SlideFirstLook />,
+    }
+    return visibleSlides(isHolder).map((meta) => ({
+      ...meta,
+      innerClass: meta.path === '/' ? HERO_INNER : SLIDE_INNER,
+      content: contentByPath[meta.path],
+    }))
+  }, [isHolder, totalSupply, setIsGalleryOpen])
+
+  // Cold-load grace for gated deep links: at first paint the wallet
+  // session has not started restoring yet, so neither "account present"
+  // nor "auto-connecting" reads true for a beat, and judging a gated
+  // path inside that window would bounce real holders home before
+  // their session lands. Gated paths get a short window to resolve.
+  const [graceOver, setGraceOver] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setGraceOver(true), 3000)
+    return () => clearTimeout(t)
+  }, [])
+
+  const slidePaths = useMemo(() => slides.map((s) => s.path), [slides])
+  const slideHex = useMemo(() => slides.map((s) => s.hex), [slides])
+  const slideNames = useMemo(() => slides.map((s) => s.name), [slides])
+
+  const { containerRef, scrollProgress } = useSlideScroll({ slidePaths, currentSlide, isGalleryOpen, navigate })
   const progressWidth = useTransform(scrollProgress, [0, 1], ['0%', '100%'])
 
-  // Sync URL path to slide index
-  useEffect(() => {
-    const idx = SLIDE_PATHS.indexOf(location.pathname)
-    if (idx !== -1 && idx !== currentSlide) setCurrentSlide(idx)
-  }, [location.pathname, currentSlide, setCurrentSlide])
+  // Continuous chrome tint. scrollProgress runs 0..1 across the whole deck,
+  // so stop i/(n-1) is exactly slide i fully in view; interpolating the
+  // visible deck's colours over those stops yields the outgoing colour,
+  // the incoming colour, or the exact blend between them mid-swipe. The
+  // stops recompute whenever the deck grows or shrinks.
+  const chromeColor = useTransform(
+    scrollProgress,
+    slideHex.map((_, i) => i / (slideHex.length - 1)),
+    slideHex,
+  )
 
-  // Keep the browser chrome (theme-color meta + body background) on the
-  // current slide's colour
+  // The body paints behind the shell (overscroll and browser-chrome blend
+  // areas); keep it on the same interpolated colour every scroll frame.
+  useMotionValueEvent(chromeColor, 'change', (value) => {
+    document.body.style.backgroundColor = value
+  })
   useEffect(() => {
-    const hex = SLIDE_HEX[currentSlide]
+    document.body.style.backgroundColor = chromeColor.get()
+  }, [chromeColor])
+
+  // Sync URL path to slide index. Paths outside the visible deck fall back
+  // to home: a gated deep link (/vault, /firstlook) lands on / unless the
+  // wallet is a proven holder, and a stale path (e.g. the removed /watch)
+  // does the same. While the holder state is still pending (session
+  // restore or the balanceOf read) we wait rather than bounce a
+  // possibly-valid gated deep link.
+  useEffect(() => {
+    const idx = slidePaths.indexOf(location.pathname)
+    if (idx !== -1) {
+      if (idx !== currentSlide) setCurrentSlide(idx)
+      return
+    }
+    if (GATED_PATHS.includes(location.pathname) && (isPending || !graceOver)) return
+    navigate('/', { replace: true })
+    if (currentSlide !== 0) setCurrentSlide(0)
+  }, [location.pathname, slidePaths, currentSlide, isPending, graceOver, navigate, setCurrentSlide])
+
+  // Keep the browser's own chrome tint (theme-color meta) on the settled
+  // slide's colour
+  useEffect(() => {
+    const hex = slideHex[currentSlide] ?? slideHex[0]
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', hex)
-    document.body.style.backgroundColor = hex
-  }, [currentSlide])
+  }, [currentSlide, slideHex])
 
-  const onSlideChange = useCallback((index: number) => navigate(SLIDE_PATHS[index]), [navigate])
+  const onSlideChange = useCallback((index: number) => {
+    if (slidePaths[index]) navigate(slidePaths[index])
+  }, [navigate, slidePaths])
 
   return (
     // h-app-shell declares 100vh before 100dvh, so older iOS gets a valid
@@ -99,9 +142,13 @@ const AppContent = () => {
     // The shell background paints through its safe-area padding, so the area
     // behind the status bar and landscape notch stays on the slide colour
     // while the header strip itself starts inside the safe area.
-    <div
-      className={`h-app-shell w-full flex flex-col overflow-hidden transition-colors duration-500 ${SLIDE_BG[currentSlide]}`}
+    // backgroundColor is the continuously interpolated chromeColor (no CSS
+    // transition on it: framer already updates it every scroll frame, and a
+    // transition would smear that behind the swipe).
+    <motion.div
+      className="h-app-shell w-full flex flex-col overflow-hidden"
       style={{
+        backgroundColor: chromeColor,
         paddingTop: 'env(safe-area-inset-top)',
         paddingLeft: 'env(safe-area-inset-left)',
         paddingRight: 'env(safe-area-inset-right)',
@@ -149,63 +196,27 @@ const AppContent = () => {
           ref={containerRef}
           className="absolute inset-0 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar"
         >
-          <Suspense fallback={<div className="min-w-full h-full bg-ohnahji-burgundy flex items-center justify-center text-white font-black">LOADING...</div>}>
-            {/* Hero: always centered (its content is designed around center layout) */}
-            <div className="min-w-full h-full snap-start bg-ohnahji-burgundy">
-              <div className="h-full overflow-hidden flex flex-col items-center justify-center px-10 md:px-16 py-8">
-                <Slide0Hero />
-              </div>
+          {slides.map((slide) => (
+            <div key={slide.path} className={`min-w-full h-full snap-start ${slide.shellClass}`}>
+              {/* Per-slide Suspense: a lazily loaded slide (including the
+                  gated pair appearing on holder connect) never blanks the
+                  rest of the deck while its chunk loads. */}
+              <Suspense fallback={<div className="h-full flex items-center justify-center text-white font-black">LOADING...</div>}>
+                <div className={slide.innerClass}>{slide.content}</div>
+              </Suspense>
             </div>
-
-            <div className="min-w-full h-full snap-start bg-ohnahji-gold">
-              <div className={SLIDE_INNER}><Slide1Story /></div>
-            </div>
-
-            <div className="min-w-full h-full snap-start bg-ohnahji-pink">
-              <div className={SLIDE_INNER}><Slide2Genesis totalSupply={totalSupply} onGalleryOpen={setIsGalleryOpen} /></div>
-            </div>
-
-            <div className="min-w-full h-full snap-start bg-ohnahji-burgundy">
-              <div className={SLIDE_INNER}><Slide3Mint /></div>
-            </div>
-
-            <div className="min-w-full h-full snap-start bg-ohnahji-pink">
-              <div className={SLIDE_INNER}><Slide4HBCU /></div>
-            </div>
-
-            <div className="min-w-full h-full snap-start bg-ohnahji-burgundy">
-              <div className={SLIDE_INNER}><Slide5Collections /></div>
-            </div>
-
-            <div className="min-w-full h-full snap-start bg-ohnahji-white">
-              <div className={SLIDE_INNER}><SlideMerchShop /></div>
-            </div>
-
-            <div className="min-w-full h-full snap-start bg-ohnahji-pink">
-              <div className={SLIDE_INNER}><Slide6Livestreams /></div>
-            </div>
-
-            <div className="min-w-full h-full snap-start bg-ohnahji-black">
-              <div className={SLIDE_INNER}><SlideLensFeed /></div>
-            </div>
-
-            <div className="min-w-full h-full snap-start bg-ohnahji-burgundy">
-              <div className={SLIDE_INNER}><Slide7Watch /></div>
-            </div>
-
-            <div className="min-w-full h-full snap-start bg-ohnahji-gold">
-              <div className={SLIDE_INNER}><Slide8Socials /></div>
-            </div>
-
-            <div className="min-w-full h-full snap-start bg-ohnahji-burgundy">
-              <div className={SLIDE_INNER}><SlideVaultLocker /></div>
-            </div>
-          </Suspense>
+          ))}
         </div>
       </div>
 
-      <NavigationDots totalSlides={SLIDE_PATHS.length} currentSlide={currentSlide} onSlideChange={onSlideChange} />
-    </div>
+      <NavigationDots
+        totalSlides={slides.length}
+        slideNames={slideNames}
+        isSocials={slides[currentSlide]?.path === '/socials'}
+        currentSlide={currentSlide}
+        onSlideChange={onSlideChange}
+      />
+    </motion.div>
   )
 }
 
@@ -213,9 +224,11 @@ function App() {
   return (
     <StoreProvider>
       <ThirdwebProvider>
-        <Router>
-          <AppContent />
-        </Router>
+        <HolderProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </HolderProvider>
       </ThirdwebProvider>
     </StoreProvider>
   )

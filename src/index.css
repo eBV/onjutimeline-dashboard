@@ -103,6 +103,26 @@
   @supports (height: 100dvh) {
     .h-app-shell { height: 100dvh; }
   }
+
+  /* Footer dock bottom clearance (used by NavigationDots).
+     Base rule: the Part B formula, a 0.75rem gap plus whatever safe-area
+     inset the device reports (34px on a home-indicator iPhone in standalone,
+     0 almost everywhere else).
+     Browser mode on phone widths: iOS Safari draws its floating toolbar OVER
+     the bottom of the page and reports a 0 bottom inset there, which left
+     the lower part of the dock (pill, black outline and 8px neo shadow)
+     hidden behind the toolbar. The fixed 88px lift clears that overlay zone
+     at 390px and 430px widths; the toolbar band is roughly 54px tall plus
+     its own bottom offset, and 88px keeps the dock's shadow fully visible
+     without opening a cavernous gap. The space below the dock is painted by
+     the app shell's slide tint, so the footer still reads as one surface.
+     The max-width guard keeps desktop geometry untouched, and standalone
+     (the installed PWA) never matches display-mode: browser, so it keeps
+     the base safe-area formula exactly as before. */
+  .dock-footer-pad { padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)); }
+  @media (display-mode: browser) and (max-width: 767px) {
+    .dock-footer-pad { padding-bottom: 88px; }
+  }
 }
 
 @utility container {

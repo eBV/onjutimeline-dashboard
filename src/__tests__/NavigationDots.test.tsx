@@ -9,43 +9,77 @@ vi.mock('framer-motion', () => ({
   motion: new Proxy({}, { get: (_t, tag) => tag }),
 }))
 
-describe('NavigationDots', () => {
-  // Must match the slideNames order in NavigationDots.tsx (12 slides)
-  const SLIDE_NAMES = ['ONJU', 'STORY', 'GENESIS', 'MINT', 'HBCU', 'ART', 'MERCH', 'LIVE', 'LENS', 'WATCH', 'SOCIALS', 'VAULT']
+// Must match src/lib/deck.ts: base deck for everyone, gated pair appended
+// for proven OG holders.
+const BASE_NAMES = ['ONJU', 'STORY', 'GENESIS', 'MINT', 'HBCU', 'ART', 'MERCH', 'LIVE', 'LENS', 'SOCIALS']
+const HOLDER_NAMES = [...BASE_NAMES, 'VAULT', 'FIRST LOOK']
 
-  test('renders one button per slide', () => {
-    render(<NavigationDots totalSlides={12} currentSlide={0} onSlideChange={() => {}} />)
+const renderDots = (names: string[], currentSlide = 0) =>
+  render(
+    <NavigationDots
+      totalSlides={names.length}
+      slideNames={names}
+      isSocials={names[currentSlide] === 'SOCIALS'}
+      currentSlide={currentSlide}
+      onSlideChange={() => {}}
+    />,
+  )
+
+describe('NavigationDots', () => {
+  test('renders one button per visible slide (base deck, no holder slides)', () => {
+    renderDots(BASE_NAMES)
+    expect(screen.getAllByRole('button')).toHaveLength(10)
+  })
+
+  test('base deck has no VAULT or FIRST LOOK buttons', () => {
+    renderDots(BASE_NAMES)
+    expect(screen.queryByRole('button', { name: /VAULT/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /FIRST LOOK/i })).not.toBeInTheDocument()
+  })
+
+  test('holder deck renders 12 buttons including VAULT and FIRST LOOK', () => {
+    renderDots(HOLDER_NAMES)
     expect(screen.getAllByRole('button')).toHaveLength(12)
+    expect(screen.getByRole('button', { name: /VAULT/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /FIRST LOOK/i })).toBeInTheDocument()
   })
 
   test('every button has an accessible label matching a slide name', () => {
-    render(<NavigationDots totalSlides={12} currentSlide={0} onSlideChange={() => {}} />)
-    for (const name of SLIDE_NAMES) {
+    renderDots(HOLDER_NAMES)
+    for (const name of HOLDER_NAMES) {
       expect(screen.getByRole('button', { name: new RegExp(name, 'i') })).toBeInTheDocument()
     }
   })
 
   test('active slide button has aria-current="step"', () => {
-    render(<NavigationDots totalSlides={12} currentSlide={3} onSlideChange={() => {}} />)
+    renderDots(BASE_NAMES, 3)
     expect(screen.getByRole('button', { name: /MINT/i })).toHaveAttribute('aria-current', 'step')
   })
 
   test('inactive slide buttons do not have aria-current', () => {
-    render(<NavigationDots totalSlides={12} currentSlide={0} onSlideChange={() => {}} />)
+    renderDots(BASE_NAMES, 0)
     expect(screen.getByRole('button', { name: /GENESIS/i })).not.toHaveAttribute('aria-current')
   })
 
   test('calls onSlideChange with the correct index', async () => {
     const user = userEvent.setup()
     const handleChange = vi.fn()
-    render(<NavigationDots totalSlides={12} currentSlide={0} onSlideChange={handleChange} />)
+    render(
+      <NavigationDots
+        totalSlides={BASE_NAMES.length}
+        slideNames={BASE_NAMES}
+        isSocials={false}
+        currentSlide={0}
+        onSlideChange={handleChange}
+      />,
+    )
     await user.click(screen.getByRole('button', { name: /GENESIS/i }))
     expect(handleChange).toHaveBeenCalledOnce()
     expect(handleChange).toHaveBeenCalledWith(2)
   })
 
   test('container has navigation role and label', () => {
-    render(<NavigationDots totalSlides={12} currentSlide={0} onSlideChange={() => {}} />)
+    renderDots(BASE_NAMES)
     expect(screen.getByRole('navigation', { name: /timeline navigation/i })).toBeInTheDocument()
   })
 })

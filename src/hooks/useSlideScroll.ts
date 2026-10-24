@@ -42,7 +42,7 @@ export function useSlideScroll({
     }
   }, [])
 
-  const lockProgrammaticScroll = useCallback((targetLeft?: number) => {
+  const lockProgrammaticScroll = useCallback((targetLeft?: number, timeoutMs: number = PROGRAMMATIC_SCROLL_TIMEOUT) => {
     isProgrammaticScroll.current = true
     programmaticTargetRef.current = targetLeft ?? null
     if (programmaticScrollTimeoutRef.current !== null) {
@@ -52,7 +52,7 @@ export function useSlideScroll({
       isProgrammaticScroll.current = false
       programmaticTargetRef.current = null
       programmaticScrollTimeoutRef.current = null
-    }, PROGRAMMATIC_SCROLL_TIMEOUT)
+    }, timeoutMs)
   }, [])
 
   const navigateToSlide = useCallback((index: number) => {
@@ -91,8 +91,16 @@ export function useSlideScroll({
       unlockProgrammaticScroll()
       return
     }
-    lockProgrammaticScroll(targetLeft)
-    containerRef.current.scrollTo({ left: targetLeft, behavior: 'smooth' })
+    const slidesAway = clientWidth > 0 ? Math.abs(targetLeft - scrollLeft) / clientWidth : 0
+    // Long jumps (deep links to far slides, e.g. a holder landing on
+    // /firstlook from a cold load) snap instantly: an animated sweep
+    // across many slides can outlast the programmatic lock, and the
+    // scroll handler then hijacks navigation to an intermediate slide.
+    // Short hops (dots, arrows, wheel) keep the smooth sweep. The lock
+    // ceiling scales with distance as a second line of defence.
+    const instant = slidesAway > 2
+    lockProgrammaticScroll(targetLeft, instant ? PROGRAMMATIC_SCROLL_TIMEOUT : 2500 + slidesAway * 1500)
+    containerRef.current.scrollTo({ left: targetLeft, behavior: instant ? 'auto' : 'smooth' })
   }, [lockProgrammaticScroll, unlockProgrammaticScroll])
 
   useEffect(() => {
@@ -101,7 +109,7 @@ export function useSlideScroll({
     // while the Suspense fallback is still mounted, when the container is
     // only one slide wide and the target clamps to 0. Retry briefly so the
     // scroll lands once the lazy slides have mounted.
-    const retryTimers = [350, 900, 1800].map((delay) =>
+    const retryTimers = [350, 900, 1800, 3200].map((delay) =>
       window.setTimeout(() => scrollToSlide(currentSlide), delay),
     )
     return () => retryTimers.forEach((t) => window.clearTimeout(t))
