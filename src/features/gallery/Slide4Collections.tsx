@@ -78,7 +78,11 @@ const Slide4Collections = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-3 md:gap-3">
+        {/* Mobile trailing room (same mechanism as the Quotes SHOW MORE
+            wrapper): 224px lifts the last card's label row from exactly
+            the viewport bottom (140px below the dock top) to 84px above
+            it at 390px. Desktop unchanged. */}
+        <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-3 md:gap-3 mb-56 md:mb-0">
           {artworks.map((art, index) => (
             <motion.a
               key={art.id}

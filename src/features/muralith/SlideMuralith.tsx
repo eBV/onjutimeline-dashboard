@@ -473,7 +473,10 @@ const SlideMuralith = () => {
                 </a>
               </div>
             )}
-            <p className="text-xs font-bold opacity-60 text-center mt-4">
+            {/* Mobile trailing room (same mechanism as the Quotes SHOW MORE
+                wrapper): 192px lifts the footer line from 118px below
+                the dock top to 74px above it at 390px. Desktop unchanged. */}
+            <p className="text-xs font-bold opacity-60 text-center mt-4 mb-48 md:mb-0">
               Sale {MURALITH_SALE_ID.slice(0, 8)}… · Contract {shortAddress(MURALITH_CONTRACT)} · No per-wallet cap
             </p>
           </div>

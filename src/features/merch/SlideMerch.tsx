@@ -68,7 +68,10 @@ const SlideMerch = () => {
           </a>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Mobile trailing room (same mechanism as the Quotes SHOW MORE
+            wrapper): 192px lifts the last price/SHOP row from 112px below
+            the dock top to 80px above it at 390px. Desktop unchanged. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-48 md:mb-0">
           {FEATURED_ITEMS.map((item, i) => (
             <motion.a
               key={`${item.url}-${item.variant}`}

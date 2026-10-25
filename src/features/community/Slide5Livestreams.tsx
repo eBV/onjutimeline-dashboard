@@ -37,6 +37,54 @@ const formatStart = (iso: string): string =>
     weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
   })
 
+// One card for both rows. The old horizontal slider rows cut cards at both
+// edges on phones and truncated titles; the vertical stack renders the same
+// card full width so the whole title is visible and nothing hides offscreen.
+type MediaItem = {
+  title: string
+  url: string
+  thumbnailUrl: string
+  meta: string
+}
+
+const MediaCard = ({ item, onPlay, playLabel, featured }: {
+  item: MediaItem
+  onPlay: () => void
+  playLabel: string
+  featured?: boolean
+}) => (
+  <div className="relative w-full bg-ohnahji-burgundy border-[4px] border-ohnahji-black rounded-2xl overflow-hidden shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg transition-all">
+    <button
+      onClick={onPlay}
+      className="block w-full text-left"
+      aria-label={playLabel}
+    >
+      <div className="aspect-video bg-ohnahji-black overflow-hidden relative">
+        <img src={item.thumbnailUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+        <span className="absolute inset-0 flex items-center justify-center">
+          <span className="bg-ohnahji-pink text-ohnahji-white border-[3px] border-ohnahji-black rounded-full p-2.5 shadow-neo-sm">
+            <Play className="w-5 h-5" strokeWidth={3} />
+          </span>
+        </span>
+      </div>
+      <div className="p-3 pr-10">
+        <p className={`font-black text-ohnahji-white leading-tight ${featured ? 'text-xl md:text-2xl' : 'text-sm'}`}>{item.title}</p>
+        <p className="text-[11px] font-bold text-ohnahji-gold mt-1">{item.meta}</p>
+      </div>
+    </button>
+    <a
+      href={item.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Open on Twitch: ${item.title}`}
+      title="Open on Twitch"
+      className="absolute bottom-3 right-3 text-ohnahji-gold hover:text-ohnahji-white transition-colors"
+    >
+      <ExternalLink className="w-4 h-4" strokeWidth={3} />
+    </a>
+  </div>
+)
+
 const Slide5Livestreams = () => {
   const { copy, weight } = useSlideSettings('/live')
   const copyClass = weight ? ' slide-copy' : ''
@@ -199,84 +247,56 @@ const Slide5Livestreams = () => {
         {activeTab === 'twitch' && feedReady && showVodRows && feed.videos.length > 0 && (
           <div className="mt-10">
             <h2 className="text-2xl font-black text-ohnahji-white mb-4">LATEST BROADCASTS</h2>
-            <div className="flex gap-4 overflow-x-auto pb-2">
-              {feed.videos.map((video) => (
-                <div
-                  key={video.id || video.url}
-                  className="relative w-60 shrink-0 bg-ohnahji-burgundy border-[4px] border-ohnahji-black rounded-2xl overflow-hidden shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg transition-all"
-                >
-                  <button
-                    onClick={() => playInPlace({ kind: 'video', id: video.id })}
-                    className="block w-full text-left"
-                    aria-label={`Play in page: ${video.title}`}
-                  >
-                    <div className="aspect-video bg-ohnahji-black overflow-hidden relative">
-                      <img src={video.thumbnailUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
-                      <span className="absolute inset-0 flex items-center justify-center">
-                        <span className="bg-ohnahji-pink text-ohnahji-white border-[3px] border-ohnahji-black rounded-full p-2.5 shadow-neo-sm">
-                          <Play className="w-5 h-5" strokeWidth={3} />
-                        </span>
-                      </span>
-                    </div>
-                    <div className="p-3 pr-10">
-                      <p className="font-black text-sm text-ohnahji-white leading-tight line-clamp-2">{video.title}</p>
-                      <p className="text-[11px] font-bold text-ohnahji-gold mt-1">{video.duration} · {video.viewCount.toLocaleString()} views</p>
-                    </div>
-                  </button>
-                  <a
-                    href={video.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Open on Twitch: ${video.title}`}
-                    title="Open on Twitch"
-                    className="absolute bottom-3 right-3 text-ohnahji-gold hover:text-ohnahji-white transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" strokeWidth={3} />
-                  </a>
-                </div>
-              ))}
-            </div>
+            <MediaCard
+              featured
+              item={{
+                title: feed.videos[0].title,
+                url: feed.videos[0].url,
+                thumbnailUrl: feed.videos[0].thumbnailUrl,
+                meta: `${feed.videos[0].duration} · ${feed.videos[0].viewCount.toLocaleString()} views`,
+              }}
+              onPlay={() => playInPlace({ kind: 'video', id: feed.videos[0].id })}
+              playLabel={`Play in page: ${feed.videos[0].title}`}
+            />
+            {feed.videos.length > 1 && (
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {feed.videos.slice(1).map((video) => (
+                  <MediaCard
+                    key={video.id || video.url}
+                    item={{
+                      title: video.title,
+                      url: video.url,
+                      thumbnailUrl: video.thumbnailUrl,
+                      meta: `${video.duration} · ${video.viewCount.toLocaleString()} views`,
+                    }}
+                    onPlay={() => playInPlace({ kind: 'video', id: video.id })}
+                    playLabel={`Play in page: ${video.title}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
 
+        {/* Mobile trailing room (same mechanism as the Quotes SHOW MORE
+            wrapper): 224px lifts the last clip card from 132px below
+            the dock top to 92px above it at 390px. Desktop unchanged. */}
         {activeTab === 'twitch' && feedReady && showVodRows && feed.clips.length > 0 && (
-          <div className="mt-8">
+          <div className="mt-8 mb-56 md:mb-0">
             <h2 className="text-2xl font-black text-ohnahji-white mb-4">TOP CLIPS</h2>
-            <div className="flex gap-4 overflow-x-auto pb-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {feed.clips.map((clip) => (
-                <div
+                <MediaCard
                   key={clip.id || clip.url}
-                  className="relative w-60 shrink-0 bg-ohnahji-burgundy border-[4px] border-ohnahji-black rounded-2xl overflow-hidden shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg transition-all"
-                >
-                  <button
-                    onClick={() => playInPlace({ kind: 'clip', embedUrl: clip.embedUrl })}
-                    className="block w-full text-left"
-                    aria-label={`Play clip in page: ${clip.title}`}
-                  >
-                    <div className="aspect-video bg-ohnahji-black overflow-hidden relative">
-                      <img src={clip.thumbnailUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
-                      <span className="absolute inset-0 flex items-center justify-center">
-                        <span className="bg-ohnahji-pink text-ohnahji-white border-[3px] border-ohnahji-black rounded-full p-2.5 shadow-neo-sm">
-                          <Play className="w-5 h-5" strokeWidth={3} />
-                        </span>
-                      </span>
-                    </div>
-                    <div className="p-3 pr-10">
-                      <p className="font-black text-sm text-ohnahji-white leading-tight line-clamp-2">{clip.title}</p>
-                      <p className="text-[11px] font-bold text-ohnahji-gold mt-1">{clip.viewCount.toLocaleString()} views</p>
-                    </div>
-                  </button>
-                  <a
-                    href={clip.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Open clip on Twitch: ${clip.title}`}
-                    title="Open on Twitch"
-                    className="absolute bottom-3 right-3 text-ohnahji-gold hover:text-ohnahji-white transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" strokeWidth={3} />
-                  </a>
-                </div>
+                  item={{
+                    title: clip.title,
+                    url: clip.url,
+                    thumbnailUrl: clip.thumbnailUrl,
+                    meta: `${clip.viewCount.toLocaleString()} views`,
+                  }}
+                  onPlay={() => playInPlace({ kind: 'clip', embedUrl: clip.embedUrl })}
+                  playLabel={`Play clip in page: ${clip.title}`}
+                />
               ))}
             </div>
           </div>
