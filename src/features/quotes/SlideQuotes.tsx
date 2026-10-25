@@ -328,8 +328,11 @@ const SlideQuotes = () => {
           )}
         </div>
 
-        {/* Filter bar */}
-        <div className="sticky top-0 z-20 bg-ohnahji-pink/95 backdrop-blur-sm py-3 -mx-2 px-2">
+        {/* Filter bar: transparent container so quote cards show through
+            behind it while scrolling; the filter controls themselves
+            (white selects, burgundy labels) are unchanged and stay readable
+            against the cards passing beneath. */}
+        <div className="sticky top-0 z-20 bg-transparent py-3 -mx-2 px-2">
           <div className="flex flex-wrap items-end gap-2.5 justify-center">
             <label className="flex flex-col gap-1">
               <span className="text-[10px] font-black tracking-widest text-ohnahji-burgundy/90">WEEKDAY</span>

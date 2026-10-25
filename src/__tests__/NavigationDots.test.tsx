@@ -83,3 +83,107 @@ describe('NavigationDots', () => {
     expect(screen.getByRole('navigation', { name: /timeline navigation/i })).toBeInTheDocument()
   })
 })
+
+// Nameplate tracking: the label's center must equal the active dot's center.
+// jsdom reports zero rects, so layout is mocked at the prototype level and
+// dispatched by element role: the aria-hidden label, the dot buttons (by
+// their aria-label), and the relative wrapper.
+describe('nameplate dot tracking', () => {
+  const NAMES = ['AAA', 'BBB', 'CCC', 'DDD', 'EEE']
+  const rect = (left: number, width: number) =>
+    ({
+      left,
+      top: 0,
+      right: left + width,
+      bottom: 20,
+      width,
+      height: 20,
+      x: left,
+      y: 0,
+      toJSON: () => ({}),
+    }) as DOMRect
+  let wrapLeft = 100
+  const orig = Element.prototype.getBoundingClientRect
+  const origOffsetDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth')
+
+  beforeEach(() => {
+    wrapLeft = 100
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      if (this.getAttribute('aria-hidden') === 'true') return rect(0, 60)
+      const aria = this.getAttribute('aria-label')
+      if (aria?.startsWith('Go to slide ')) {
+        const idx = NAMES.indexOf(aria.replace('Go to slide ', ''))
+        return rect(wrapLeft + 16 + idx * 26, 16)
+      }
+      if (this.className?.includes('relative')) return rect(wrapLeft, 300)
+      return orig.call(this)
+    }
+    // The component reads the label width from offsetWidth (layout width,
+    // transform-independent); jsdom reports 0 for it, so mock it by role
+    // alongside the rect mock.
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
+      configurable: true,
+      get(this: Element) {
+        if (this.getAttribute('aria-hidden') === 'true') return 60
+        if (this.getAttribute('aria-label')?.startsWith('Go to slide ')) return 16
+        if (this.className?.includes('relative')) return 300
+        return 0
+      },
+    })
+  })
+
+  afterEach(() => {
+    Element.prototype.getBoundingClientRect = orig
+    if (origOffsetDesc) Object.defineProperty(HTMLElement.prototype, 'offsetWidth', origOffsetDesc)
+  })
+
+  test('label centers on the active dot, first and middle slides', () => {
+    const { rerender } = render(
+      <NavigationDots totalSlides={NAMES.length} slideNames={NAMES} isSocials={false} currentSlide={0} onSlideChange={() => {}} />,
+    )
+    // Dot 0 center relative to the wrapper: 16 (padding) + 8 (half dot).
+    expect(screen.getByText('AAA')).toHaveStyle({ left: '24px' })
+    rerender(
+      <NavigationDots totalSlides={NAMES.length} slideNames={NAMES} isSocials={false} currentSlide={2} onSlideChange={() => {}} />,
+    )
+    // Dot 2 center: 16 + 2 * 26 + 8 = 76.
+    expect(screen.getByText('CCC')).toHaveStyle({ left: '76px' })
+  })
+
+  test('label clamps to the viewport instead of clipping on an edge dot', () => {
+    wrapLeft = 900
+    const { rerender } = render(
+      <NavigationDots totalSlides={NAMES.length} slideNames={NAMES} isSocials={false} currentSlide={0} onSlideChange={() => {}} />,
+    )
+    // Dot 0 center is still 24 relative to the wrapper, inside the viewport.
+    expect(screen.getByText('AAA')).toHaveStyle({ left: '24px' })
+    rerender(
+      <NavigationDots totalSlides={NAMES.length} slideNames={NAMES} isSocials={false} currentSlide={4} onSlideChange={() => {}} />,
+    )
+    // Dot 4 center would be 128, but the viewport cap is
+    // 1024 - 2 - 30 (half label) - 900 (wrapper left) = 92.
+    expect(screen.getByText('EEE')).toHaveStyle({ left: '92px' })
+  })
+})
+
+// Anchor positioning path: on browsers that support CSS anchor
+// positioning, the label must NOT get a JS inline left (an inline left
+// would beat the anchor rule), so the anchor classes own placement.
+describe('nameplate anchor positioning', () => {
+  test('anchor-capable browsers skip the JS inline left', async () => {
+    vi.stubGlobal('CSS', { supports: () => true })
+    try {
+      vi.resetModules()
+      const { default: AnchorDots } = await import('../components/NavigationDots')
+      const NAMES = ['AAA', 'BBB', 'CCC']
+      render(
+        <AnchorDots totalSlides={NAMES.length} slideNames={NAMES} isSocials={false} currentSlide={1} onSlideChange={() => {}} />,
+      )
+      const label = screen.getByText('BBB')
+      expect(label.style.left).toBe('')
+      expect(label.className).toContain('position-anchor')
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+})

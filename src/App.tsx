@@ -9,6 +9,7 @@ import { StoreProvider, useStore } from './hooks/useStore'
 import { HolderProvider, useHolderStatus } from './hooks/useHolderStatus'
 import { useSlideScroll } from './hooks/useSlideScroll'
 import NavigationDots from './components/NavigationDots'
+import { initAutoHideScrollbars } from './lib/autoHideScrollbars'
 import { visibleSlides, gateSatisfied, SlideMeta } from './lib/deck'
 import { useSiteConfig, DEFAULT_SITE_CONFIG } from './lib/siteConfig'
 import { isAdminAddress, ADMIN_PATH } from './lib/admin'
@@ -101,6 +102,11 @@ const AppContent = () => {
     return () => clearTimeout(t)
   }, [])
 
+  // Sitewide auto-hiding scrollbars (see src/lib/autoHideScrollbars.ts):
+  // bars dissolve out after scrolling stops, so a persistent bar never
+  // sits on screen while reading.
+  useEffect(() => initAutoHideScrollbars(), [])
+
   const slidePaths = useMemo(() => slides.map((s) => s.path), [slides])
   const slideHex = useMemo(() => slides.map((s) => s.hex), [slides])
   const slideNames = useMemo(() => slides.map((s) => s.name), [slides])
@@ -168,12 +174,17 @@ const AppContent = () => {
   // slide's colour. The body background is set here too as a backstop
   // (Part 5): on an index change it snaps to the active slide's hex, so
   // the paint behind the shell can never sit on the default white while
-  // the interpolated tint catches up after a deck change.
+  // the interpolated tint catches up after a deck change. While the
+  // Genesis gallery overlay is open, every layer goes maroon: the
+  // overlay itself is maroon, but the body behind it (which shows
+  // through a translucent Android nav bar at the viewport bottom) and
+  // the shell tint would otherwise stay Genesis pink, leaving a pink
+  // footer strip under a maroon view.
   useEffect(() => {
-    const hex = slideHex[currentSlide] ?? slideHex[0]
+    const hex = isGalleryOpen ? '#3C0010' : (slideHex[currentSlide] ?? slideHex[0])
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', hex)
     if (hex) document.body.style.backgroundColor = hex
-  }, [currentSlide, slideHex])
+  }, [currentSlide, slideHex, isGalleryOpen])
 
   const onSlideChange = useCallback((index: number) => {
     if (slidePaths[index]) navigate(slidePaths[index])
@@ -193,7 +204,9 @@ const AppContent = () => {
     <motion.div
       className="h-app-shell w-full relative overflow-hidden"
       style={{
-        backgroundColor: chromeColor,
+        // Maroon shell while the gallery overlay is open (see the
+        // theme-color effect above); otherwise the interpolated tint.
+        backgroundColor: isGalleryOpen ? '#3C0010' : chromeColor,
         paddingTop: 'env(safe-area-inset-top)',
         paddingLeft: 'env(safe-area-inset-left)',
         paddingRight: 'env(safe-area-inset-right)',

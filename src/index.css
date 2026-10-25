@@ -208,10 +208,22 @@
     @apply font-sans;
   }
 
+  /* Auto-hiding scrollbars (sitewide): the width stays 12px at all times
+     so hiding never shifts layout; only the colors dissolve. Idle, the
+     track and thumb are fully transparent. While the user scrolls or
+     presses (html.scrolling, toggled by src/lib/autoHideScrollbars.ts),
+     they dissolve back in over 0.6s. Chromium/Safari animate the color
+     transition; Firefox swaps scrollbar-color without animating it (its
+     engine does not transition that property), so it hides and shows
+     with a snap there instead of a dissolve. */
   ::-webkit-scrollbar       { width: 12px; height: 12px; }
-  ::-webkit-scrollbar-track { background: #FFFFFF; border-left: 6px solid #000000; border-radius: 0; }
-  ::-webkit-scrollbar-thumb { background: #FE517E; border: 6px solid #000000; border-radius: 0; }
-  ::-webkit-scrollbar-thumb:hover { background: #F1C40F; }
+  ::-webkit-scrollbar-track { background: transparent; border-left: 6px solid transparent; border-radius: 0; transition: background-color 0.6s ease, border-color 0.6s ease; }
+  ::-webkit-scrollbar-thumb { background: transparent; border: 6px solid transparent; border-radius: 0; transition: background-color 0.6s ease, border-color 0.6s ease; }
+  html.scrolling::-webkit-scrollbar-track, html.scrolling ::-webkit-scrollbar-track { background: #FFFFFF; border-left-color: #000000; }
+  html.scrolling::-webkit-scrollbar-thumb, html.scrolling ::-webkit-scrollbar-thumb { background: #FE517E; border-color: #000000; }
+  html.scrolling::-webkit-scrollbar-thumb:hover, html.scrolling ::-webkit-scrollbar-thumb:hover { background: #F1C40F; }
+  * { scrollbar-color: transparent transparent; }
+  html.scrolling, html.scrolling * { scrollbar-color: #FE517E #FFFFFF; }
 }
 
 /* ─── Component classes ──────────────────────────────────────────────────── */
