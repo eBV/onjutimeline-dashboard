@@ -144,6 +144,41 @@
       padding-bottom: calc(8rem + 88px);
     }
   }
+
+  /* Mobile trailing spacer (2026-10-24). The padding-bottom above does
+     NOT create scrollable room in Chrome when the scroller is a column
+     flex container: measured on the production build, growing
+     padding-bottom from 216px to 500px left scrollHeight unchanged at
+     1004px, which is why the Genesis artwork's minted line sat half-cut
+     behind the dock at max scroll despite 216px of declared clearance.
+     A real trailing flex item is what Chrome honors, so the clearance
+     lives here as an ::after spacer instead. The existing padding-bottom
+     values are left untouched: they still feed scroll-padding-bottom and
+     the min-h-full content-box sizing, and removing them would change
+     other behavior for no gain.
+     Arithmetic (Genesis, the slide this fixes): the artwork card's
+     center sits at content offset C (833px at 390px wide, 853px at
+     430px wide); centering it needs maxScroll = C - viewportHeight/2.
+     The spacer sets a floor on maxScroll, so height = 845px - 50dvh
+     tracks that requirement across phone heights (512px at 667px tall,
+     423px at 844px tall, 379px at 932px tall), landing the card within
+     about 12px of viewport center at max scroll on every phone size
+     measured. The 400px fallback covers browsers without dvh. Other
+     slides get the same generous room, so their final blocks can also
+     reach center; short slides gain a little dead scroll at the end,
+     which is the requested bottom padding, not a defect. Desktop is
+     untouched: the max-width guard keeps this rule off at 768px and up,
+     and the hero slide uses its own overflow-hidden inner, not this
+     scroller. */
+  @media (max-width: 767px) {
+    .slide-scroller::after {
+      content: "";
+      display: block;
+      flex: none;
+      height: 400px;
+      height: calc(845px - 50dvh);
+    }
+  }
 }
 
 @utility container {

@@ -37,7 +37,16 @@ const Slide6Socials = () => {
 
   return (
     <div className="min-h-full flex flex-col items-center justify-start md:justify-center pt-20 pb-8 md:py-8">
-      <div className="max-w-5xl w-full">
+      {/* Mobile trailing room: padding, not margin, and sized past the
+          scroller's flex floor. The line's own bottom margin collapsed
+          out of its block wrapper, and 96px of wrapper padding only
+          reached a content extent of 1252px, still under the scroller's
+          1267px floor (628 root box + 423 spacer + 216 padding), so
+          scrollHeight did not move. 224px of padding puts the extent at
+          1380px, lifts maxScroll to 536, and puts the line 84px above
+          the dock top at 390px (it sat 17px below it). Desktop keeps
+          no bottom padding. */}
+      <div className="max-w-5xl w-full pb-56 md:pb-0">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -48,7 +57,13 @@ const Slide6Socials = () => {
           <div className="absolute top-0 right-0 w-64 h-64 bg-ohnahji-gold/20 rounded-full -translate-y-1/2 translate-x-1/2 -z-0" />
 
           <div className="relative z-10 text-center mb-8 md:mb-10">
-            <h2 className={`text-5xl font-black text-ohnahji-burgundy mb-4${copyClass}`}>{copy.heading}</h2>
+            {/* Mobile size 40px, not 48px: the longest word ("community")
+                measures 256px at 48px Inter Black but the card's line box
+                is only 250px at 390px wide (220px at 360px), so the card's
+                overflow-hidden clipped the word's edges. At 40px the word
+                measures 213px and fits both widths with room to spare.
+                Desktop keeps 48px via md:text-5xl. */}
+            <h2 className={`text-[40px] md:text-5xl font-black text-ohnahji-burgundy mb-4${copyClass}`}>{copy.heading}</h2>
             <p className={`text-xl text-ohnahji-burgundy/70 max-w-xl mx-auto${copyClass}`}>
               {copy.paragraph}
             </p>

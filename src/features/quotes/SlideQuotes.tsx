@@ -475,11 +475,17 @@ const SlideQuotes = () => {
                 )
               })}
             </div>
+            {/* Mobile trailing room: on large-overflow feeds the
+                scroller-level spacer is inert (it only floors maxScroll
+                on short slides), so the button needs its own in-flow
+                margin to clear the dock. 224px lifts the button from
+                124px below the dock top to 100px above it at 390px.
+                Desktop keeps the original 16px. */}
             {visibleCount < visible.length && (
-              <div className="text-center mt-2 mb-4">
+              <div className="text-center mt-2 mb-56 md:mb-4">
                 <button
                   onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                  className="bg-ohnahji-gold text-ohnahji-black px-6 py-3 border-[6px] border-ohnahji-black rounded-full font-black text-sm shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg active:translate-x-[2px] active:translate-y-[2px] active:shadow-neo-active transition-all"
+                  className="bg-ohnahji-pink text-ohnahji-white px-6 py-3 border-[6px] border-ohnahji-black rounded-full font-black text-sm shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg active:translate-x-[2px] active:translate-y-[2px] active:shadow-neo-active transition-all"
                 >
                   SHOW MORE ({visible.length - visibleCount} LEFT)
                 </button>

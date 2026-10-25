@@ -1,67 +1,15 @@
 import { useSlideSettings } from '../../lib/siteConfig'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
+import { fetchLensPage, mergeLensPage, LENS_ACCOUNT, type LensPost } from './lensFeed'
 
 // Latest posts from @ohnahji on Lens Chain, read through the public Lens
-// GraphQL API (no auth or API key needed for reads).
-const LENS_ACCOUNT = '0x6582D147eEb571b3B3689C42f4e5416a89F83428' // ohnahji.lens
-const LENS_API = 'https://api.lens.xyz/graphql'
+// GraphQL API (no auth or API key needed for reads). Page 1 loads with
+// the slide; LOAD MORE below the feed fetches older pages through the
+// API's cursor pagination and appends them (see lensFeed.ts).
 // Orb profile page for @ohnahji (chosen over hey.xyz as the follow link).
 const FOLLOW_URL = 'https://orb.club/@ohnahji'
-
-const POSTS_QUERY = `
-query Posts {
-  posts(request: { filter: { authors: ["${LENS_ACCOUNT}"] }, pageSize: TEN }) {
-    items {
-      __typename
-      ... on Post {
-        id
-        timestamp
-        metadata {
-          __typename
-          ... on TextOnlyMetadata { content }
-          ... on ImageMetadata { content image { item } }
-          ... on VideoMetadata { content video { item } }
-          ... on AudioMetadata { content audio { item } }
-          ... on ArticleMetadata { content }
-        }
-      }
-    }
-  }
-}
-`
-
-interface LensPost {
-  id: string
-  timestamp: string
-  text: string
-  imageUrl?: string
-  videoUrl?: string
-  audioUrl?: string
-}
-
-const fetchLensPosts = async (): Promise<LensPost[]> => {
-  const response = await fetch(LENS_API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: POSTS_QUERY }),
-  })
-  if (!response.ok) throw new Error(`Lens API responded ${response.status}`)
-  const json = await response.json()
-  if (json.errors) throw new Error('Lens API returned errors')
-  const items = json?.data?.posts?.items ?? []
-  return items
-    .filter((it: any) => it && it.__typename === 'Post' && it.metadata && it.timestamp)
-    .map((it: any) => ({
-      id: String(it.id),
-      timestamp: it.timestamp,
-      text: it.metadata.content ?? '',
-      imageUrl: it.metadata.image?.item,
-      videoUrl: it.metadata.video?.item,
-      audioUrl: it.metadata.audio?.item,
-    }))
-    .sort((a: LensPost, b: LensPost) => +new Date(b.timestamp) - +new Date(a.timestamp))
-}
 
 const relativeTime = (iso: string): string => {
   const seconds = Math.max(0, Math.floor((Date.now() - +new Date(iso)) / 1000))
@@ -78,14 +26,55 @@ const relativeTime = (iso: string): string => {
 const SlideLens = () => {
   const { copy, weight } = useSlideSettings('/lens')
   const copyClass = weight ? ' slide-copy' : ''
-  const { data: posts, isLoading, isError, refetch, isFetching } = useQuery({
+  const { data: firstPage, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['lens-posts', LENS_ACCOUNT],
-    queryFn: fetchLensPosts,
+    queryFn: () => fetchLensPage(),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60,
     retry: 1,
     refetchOnWindowFocus: false,
   })
+
+  // Appended older pages. They always belong to the current first-page
+  // snapshot: if page 1 refetches with new content, the extras reset
+  // rather than appending stale posts under a fresh feed.
+  const [extraPosts, setExtraPosts] = useState<LensPost[]>([])
+  const [cursor, setCursor] = useState<string | null | undefined>(undefined)
+  const [endReached, setEndReached] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [loadMoreError, setLoadMoreError] = useState(false)
+  const firstPageRef = useRef<typeof firstPage>(undefined)
+  useEffect(() => {
+    if (firstPage && firstPageRef.current !== firstPage) {
+      firstPageRef.current = firstPage
+      setExtraPosts([])
+      setCursor(firstPage.nextCursor)
+      setEndReached(firstPage.nextCursor === null)
+      setLoadMoreError(false)
+    }
+  }, [firstPage])
+  const posts = firstPage ? [...firstPage.posts, ...extraPosts] : undefined
+
+  const loadMore = async () => {
+    if (loadingMore || cursor === undefined || cursor === null) return
+    setLoadingMore(true)
+    setLoadMoreError(false)
+    try {
+      const page = await fetchLensPage(cursor)
+      const merged = mergeLensPage(posts ?? [], page)
+      // merged.posts starts with the current feed, so the new items are
+      // everything past its previous length.
+      setExtraPosts(merged.posts.slice((posts ?? []).length))
+      setCursor(merged.nextCursor)
+      setEndReached(merged.endReached)
+    } catch {
+      // The existing posts stay exactly as they were; only the button
+      // flips to its retry state.
+      setLoadMoreError(true)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   return (
     <div className="min-h-full flex flex-col items-center justify-start pt-20 pb-8 md:py-8">
@@ -183,6 +172,31 @@ const SlideLens = () => {
               </motion.article>
             ))}
           </div>
+        )}
+
+        {/* Paging: older posts append below, newest first, nothing
+            reorders and nothing duplicates (see lensFeed.mergeLensPage).
+            The button is pink with white text, matching the MINT pill. */}
+        {posts && posts.length > 0 && !endReached && (
+          <div className="text-center mt-6 mb-2">
+            {loadMoreError && (
+              <p className="text-ohnahji-white/80 font-bold text-sm mb-3">
+                Could not load more posts. Your feed is untouched; try again.
+              </p>
+            )}
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="bg-ohnahji-pink text-ohnahji-white px-6 py-3 border-[6px] border-ohnahji-black rounded-full font-black text-sm shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg active:translate-x-[2px] active:translate-y-[2px] active:shadow-neo-active transition-all disabled:opacity-60"
+            >
+              {loadingMore ? 'LOADING...' : loadMoreError ? 'RETRY' : 'LOAD MORE'}
+            </button>
+          </div>
+        )}
+        {posts && posts.length > 0 && endReached && (
+          <p className="text-center text-ohnahji-white/80 font-bold text-sm mt-6 mb-2">
+            You are caught up.
+          </p>
         )}
       </div>
     </div>
