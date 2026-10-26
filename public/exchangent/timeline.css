@@ -1,0 +1,179 @@
+/* Timeline edition overlay: the Ohnahji timeline site visual language layered
+   over the explainer without touching its content or links. Brand tokens:
+   pink #FE517E, gold #F1C40F, maroon #3C0010, black, white. Loaded after
+   styles.css so every rule here wins. System font stacks only, so the page
+   makes zero external requests (the live explainer pulls webfonts and
+   three.js from CDNs; this variant vendors three.js and drops webfonts). */
+
+/* Clean professional typography, never cartoon text: the cartoon look lives
+   only in the island HUD chrome via the ohnahji theme, not in page type. */
+body {
+  font-family: system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.context-row,
+.eyebrow,
+.map-label,
+.section-number,
+.service-code,
+.price,
+.closing-code,
+.trade-tab,
+.island-days a {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace !important;
+}
+#island3d {
+  font-family: system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+#island3d .place p {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* Bright timeline paper, always: the variant ships light and keeps the
+   toggle working for anyone who prefers dark. */
+:root[data-theme="light"] {
+  --paper: #ffffff;
+  --panel: #ffffff;
+  --ink: #11110f;
+  --muted: #4a4741;
+  --line: #11110f;
+  --soft-line: #d8d4cb;
+  --shadow: 8px 8px 0 #11110f;
+}
+
+/* Header rail: white bar, thick rule, pill nav. */
+.context-rail {
+  background: #ffffff;
+  border-bottom: 3px solid #11110f;
+}
+.context-actions nav a {
+  display: inline-block;
+  padding: 7px 14px;
+  border: 2.5px solid #11110f;
+  border-radius: 999px;
+  background: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+}
+.context-actions nav a:hover {
+  background: #fe517e;
+  color: #ffffff;
+}
+.context-actions nav a.nav-agent {
+  background: #f1c40f;
+  color: #11110f;
+}
+
+/* Hero: pink rule under the eyebrow row and a maroon accent on the copy. */
+.hero {
+  border-top: 8px solid #fe517e;
+}
+.hero-copy strong {
+  color: #3c0010;
+}
+.plain-line {
+  border-left-color: #fe517e;
+}
+
+/* Section headers: loud uppercase titles, pink number chips. */
+.section {
+  border-top: 3px solid #11110f;
+}
+.section-head h2,
+h2 {
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+}
+.section-number {
+  display: inline-block;
+  padding: 6px 10px;
+  background: #fe517e;
+  color: #11110f;
+  border: 2.5px solid #11110f;
+  box-shadow: 3px 3px 0 #11110f;
+}
+
+/* Menu rows become chunky white cards. */
+.service-list {
+  border-top: none;
+}
+.service {
+  background: #ffffff;
+  border: 3px solid #11110f;
+  box-shadow: 6px 6px 0 #11110f;
+  padding: 24px 28px;
+  margin-bottom: 16px;
+}
+.service h3 {
+  font-weight: 800;
+}
+.price {
+  background: #f1c40f;
+  border: 2.5px solid #11110f;
+  box-shadow: 3px 3px 0 #11110f;
+}
+
+/* Square cards: hard borders, hard shadows, gold top rule kept. */
+.sq-card {
+  background: #ffffff;
+  border: 3px solid #11110f !important;
+  box-shadow: 6px 6px 0 #11110f;
+}
+.sq-card h3 {
+  font-weight: 800;
+}
+.sq-fly,
+.sq-view {
+  border: 2.5px solid #11110f;
+  box-shadow: 3px 3px 0 #11110f;
+  font-weight: 700;
+  text-decoration: none;
+}
+.sq-fly:hover,
+.sq-view:hover {
+  background: #fe517e;
+  color: #ffffff;
+}
+
+/* Timeline rows: thick rule, bold titles, maroon verify links. */
+.iev {
+  border-top: 2px solid #11110f !important;
+}
+.iev-t {
+  font-weight: 800;
+}
+.iev-t a {
+  color: #3c0010;
+}
+
+/* Island frame: thick black border and hard shadow, timeline style. */
+#island3d {
+  border: 3px solid #11110f !important;
+  box-shadow: 8px 8px 0 #11110f !important;
+}
+
+/* Visit button and trade tabs keep their brand fills, hardened. */
+.visit-island {
+  border: 3px solid #11110f !important;
+  box-shadow: 6px 6px 0 #11110f !important;
+}
+.trade-tab {
+  border: 2.5px solid #11110f;
+}
+.trade-tab[aria-selected="true"] {
+  box-shadow: 4px 4px 0 #11110f;
+}
+
+/* Theme toggle: pink track, gold thumb. */
+.theme-toggle-track {
+  background: #fe517e !important;
+  border: 2px solid #11110f;
+}
+.theme-toggle-thumb {
+  background: #f1c40f !important;
+}
+
+/* Closing band: already pink; harden its rule. */
+.closing {
+  border-top: 3px solid #11110f;
+  border-bottom: 3px solid #11110f;
+}
