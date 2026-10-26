@@ -18,6 +18,13 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
   const [tokens, setTokens] = useState<number[]>([])
   const [loading, setLoading] = useState(true)
   const [heroTokenId, setHeroTokenId] = useState(1)
+  // Every shuffle remounts the grid (wave 3): tile components are keyed
+  // by token id, so without this a shuffled window that overlaps the old
+  // one reuses tiles whose exhausted pink placeholders would then never
+  // re-probe, which is exactly the "shuffle goes pink and never loads"
+  // failure. Remounting forces a fresh probe chain per tile; the shared
+  // probe pool keeps the 60-tile burst orderly instead of 429-storming.
+  const [shuffleRound, setShuffleRound] = useState(0)
   const [selectedTokenId, setSelectedTokenId] = useState<number | null>(null)
   const [selectedUnrevealed, setSelectedUnrevealed] = useState(false)
   const [searchInput, setSearchInput] = useState('')
@@ -40,6 +47,7 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
   }, [supply])
 
   const shuffleHero = useCallback(() => {
+    setShuffleRound((r) => r + 1)
     navigateTo(Math.floor(Math.random() * maxToken) + 1)
   }, [navigateTo, maxToken])
 
@@ -152,6 +160,7 @@ const NFTGallery = ({ totalSupply, onClose }: NFTGalleryProps) => {
           tokens; grid clicks are always revealed selections. */}
       <div className="flex-1 overflow-hidden">
         <NFTGalleryGrid
+          key={shuffleRound}
           tokens={tokens}
           heroTokenId={heroTokenId}
           onSelectToken={(id) => { setSelectedUnrevealed(false); setSelectedTokenId(id) }}

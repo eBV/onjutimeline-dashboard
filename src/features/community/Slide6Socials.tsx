@@ -85,7 +85,7 @@ const Slide6Socials = () => {
                 className={`${social.color} ${social.textClass ?? 'text-white'} w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.75rem)] lg:w-[calc(25%-0.75rem)] px-3 py-5 flex flex-col items-center justify-center gap-2 rounded-2xl border-[4px] border-ohnahji-black shadow-neo hover:shadow-neo-lg transition-all`}
               >
                 <span className="h-[30px] flex items-center">{social.icon}</span>
-                <span className="font-bold text-sm tracking-wide font-sans text-center leading-tight">{social.name}</span>
+                <span className="font-black text-lg tracking-wide font-sans text-center leading-tight">{social.name}</span>
               </motion.a>
             ))}
           </div>

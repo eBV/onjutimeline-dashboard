@@ -146,7 +146,7 @@ const SlideLens = () => {
                 {/* Post text is rendered as a plain React text node (escaped
                     by React); never as HTML. */}
                 {post.text && (
-                  <p className="font-bold text-ohnahji-black whitespace-pre-wrap break-words leading-relaxed">
+                  <p className="font-black text-lg md:text-xl text-ohnahji-black whitespace-pre-wrap break-words leading-snug">
                     {post.text}
                   </p>
                 )}
