@@ -37,7 +37,7 @@ export const HEX_RE = /^#[0-9A-Fa-f]{6}$/
 // not part of the public deck config and can never be toggled.
 export const KNOWN_SLIDE_PATHS = [
   '/', '/story', '/genesis', '/mint', '/community', '/art', '/merch',
-  '/live', '/lens', '/quotes', '/socials', '/muralith', '/vault', '/firstlook',
+  '/live', '/lens', '/quotes', '/socials', '/muralith', '/exchangent', '/vault', '/firstlook',
 ]
 
 export const FEATURE_KEYS = ['mintPill', 'quotesVoting', 'twitchVodRows', 'antiPhishingLine']
@@ -49,6 +49,7 @@ export const GATE_VALUES = ['public', 'wallet', 'og']
 export const DEFAULT_GATES = {
   '/vault': 'og',
   '/firstlook': 'og',
+  '/exchangent': 'og',
 }
 
 // Font-weight steps offered by the panel (Tailwind scale, minus 900:
@@ -122,6 +123,10 @@ export const DEFAULT_COPY = {
     heading: 'First Look',
     paragraph: 'Two worlds in the workshop, opened early for OG holders: the Alphites stadium and the new campus.',
   },
+  '/exchangent': {
+    heading: 'The\nExchangent',
+    paragraph: 'The insider map of the New Eden square: the marketplace, the Gallery, the Welcome House, and the Archive, open early for OG holders.',
+  },
 }
 
 // Default hexes mirror src/lib/deck.ts exactly (drift-tested).
@@ -142,6 +147,7 @@ export const DEFAULT_CONFIG = {
     '/quotes': { visible: true, hex: '#FE517E', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/quotes'] } },
     '/socials': { visible: true, hex: '#F1C40F', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/socials'] } },
     '/muralith': { visible: true, hex: '#FE517E', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/muralith'] } },
+    '/exchangent': { visible: true, hex: '#3C0010', gate: 'og', weight: null, copy: { ...DEFAULT_COPY['/exchangent'] } },
     '/vault': { visible: true, hex: '#3C0010', gate: 'og', weight: null, copy: { ...DEFAULT_COPY['/vault'] } },
     '/firstlook': { visible: true, hex: '#3C0010', gate: 'og', weight: null, copy: { ...DEFAULT_COPY['/firstlook'] } },
   },

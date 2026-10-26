@@ -59,6 +59,7 @@ export const COPY_MAX_CHARS = 300
 export const DEFAULT_GATES: Record<string, SlideGate> = {
   '/vault': 'og',
   '/firstlook': 'og',
+  '/exchangent': 'og',
 }
 
 // Default heading + paragraph per slide, mirroring the literals the
@@ -123,6 +124,10 @@ export const DEFAULT_COPY: Record<string, SlideCopy> = {
   '/firstlook': {
     heading: 'First Look',
     paragraph: 'Two worlds in the workshop, opened early for OG holders: the Alphites stadium and the new campus.',
+  },
+  '/exchangent': {
+    heading: 'The\nExchangent',
+    paragraph: 'The insider map of the New Eden square: the marketplace, the Gallery, the Welcome House, and the Archive, open early for OG holders.',
   },
 }
 

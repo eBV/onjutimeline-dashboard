@@ -27,6 +27,7 @@ const SlideQuotesFeed = lazy(() => import('./features/quotes/SlideQuotes'))
 const Slide8Socials = lazy(() => import('./features/community/Slide6Socials'))
 const SlideVaultLocker = lazy(() => import('./features/vault/SlideVault'))
 const SlideFirstLook = lazy(() => import('./features/firstlook/SlideFirstLook'))
+const SlideExchangent = lazy(() => import('./features/exchangent/SlideExchangent'))
 const SlideAdmin = lazy(() => import('./features/admin/SlideAdmin'))
 const SlideMuralith = lazy(() => import('./features/muralith/SlideMuralith'))
 
@@ -77,6 +78,7 @@ const AppContent = () => {
       '/quotes': <SlideQuotesFeed />,
       '/socials': <Slide8Socials />,
       '/muralith': <SlideMuralith />,
+      '/exchangent': <SlideExchangent />,
       '/vault': <SlideVaultLocker />,
       '/firstlook': <SlideFirstLook />,
       '/admin': <SlideAdmin />,

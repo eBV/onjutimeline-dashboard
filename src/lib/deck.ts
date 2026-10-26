@@ -48,6 +48,12 @@ export const BASE_SLIDES: SlideMeta[] = [
   // Muralith: native Highlight mint tab. Public, after Socials and
   // before the gated pair appends, so base indexes never shift.
   { path: '/muralith', name: 'MURALITH', hex: '#FE517E', shellClass: 'bg-ohnahji-pink' },
+  // Exchangent: the New Eden explainer, vendored same-origin under
+  // public/exchangent/ and shown in an iframe. It lives in the base
+  // list (after Muralith, before the gated pair) but carries gated:
+  // true, so its default gate resolves to 'og' like Vault and First
+  // Look; the holder pair still closes the deck.
+  { path: '/exchangent', name: 'EXCHANGENT', hex: '#3C0010', shellClass: 'bg-ohnahji-burgundy', gated: true },
 ]
 
 export const GATED_SLIDES: SlideMeta[] = [
