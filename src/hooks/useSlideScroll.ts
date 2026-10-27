@@ -6,6 +6,11 @@ interface UseSlideScrollOptions {
   currentSlide: number
   isGalleryOpen: boolean
   navigate: (path: string, options?: { replace: boolean }) => void
+  // False on the large-desktop layout, where the vertical scroller
+  // owns scrolling instead. The hook still runs (hooks cannot be
+  // conditional) but all of its effects no-op, so its wheel, key, and
+  // scroll-to behaviour can never fight the desktop page.
+  enabled?: boolean
 }
 
 interface UseSlideScrollResult {
@@ -25,6 +30,7 @@ export function useSlideScroll({
   currentSlide,
   isGalleryOpen,
   navigate,
+  enabled = true,
 }: UseSlideScrollOptions): UseSlideScrollResult {
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollProgress = useMotionValue(0)
@@ -106,6 +112,7 @@ export function useSlideScroll({
   // geometry re-derivation equals the value the next scroll event would
   // compute anyway.
   useEffect(() => {
+    if (!enabled) return
     const correct = () => {
       if (isProgrammaticScroll.current || !containerRef.current) return
       syncProgressFromGeometry()
@@ -121,7 +128,7 @@ export function useSlideScroll({
       cancelAnimationFrame(raf)
       window.clearTimeout(retry)
     }
-  }, [slidePaths, currentSlide, scrollProgress, syncProgressFromGeometry])
+  }, [slidePaths, currentSlide, scrollProgress, syncProgressFromGeometry, enabled])
 
   const scrollToSlide = useCallback((index: number) => {
     if (!containerRef.current) return
@@ -144,6 +151,7 @@ export function useSlideScroll({
   }, [lockProgrammaticScroll, unlockProgrammaticScroll])
 
   useEffect(() => {
+    if (!enabled) return
     scrollToSlide(currentSlide)
     // On a cold deep link (e.g. /mint) the first scroll attempt can fire
     // while the Suspense fallback is still mounted, when the container is
@@ -153,9 +161,10 @@ export function useSlideScroll({
       window.setTimeout(() => scrollToSlide(currentSlide), delay),
     )
     return () => retryTimers.forEach((t) => window.clearTimeout(t))
-  }, [currentSlide, scrollToSlide])
+  }, [currentSlide, scrollToSlide, enabled])
 
   useEffect(() => {
+    if (!enabled) return
     const container = containerRef.current
     if (!container) return
 
@@ -228,7 +237,7 @@ export function useSlideScroll({
       container.removeEventListener('scroll', handleScroll)
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [currentSlide, handleScroll, isGalleryOpen, navigateToSlide, slidePaths.length])
+  }, [currentSlide, handleScroll, isGalleryOpen, navigateToSlide, slidePaths.length, enabled])
 
   useEffect(() => {
     return () => {
