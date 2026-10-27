@@ -1,8 +1,8 @@
 import React, { Suspense, lazy, useEffect, useCallback, useMemo, useState } from 'react'
 import { motion, useTransform, useMotionValueEvent } from 'framer-motion'
 import { BrowserRouter as Router, useLocation, useNavigate } from 'react-router-dom'
-import { ThirdwebProvider, ConnectButton } from 'thirdweb/react'
-import { OHNAHJI_WALLET_THEME } from './lib/walletTheme'
+import { ThirdwebProvider } from 'thirdweb/react'
+import SiteHeader from './components/SiteHeader'
 import './index.css'
 
 import { StoreProvider, useStore } from './hooks/useStore'
@@ -30,6 +30,7 @@ const SlideFirstLook = lazy(() => import('./features/firstlook/SlideFirstLook'))
 const SlideExchangent = lazy(() => import('./features/exchangent/SlideExchangent'))
 const SlideAdmin = lazy(() => import('./features/admin/SlideAdmin'))
 const SlideMuralith = lazy(() => import('./features/muralith/SlideMuralith'))
+const SlideFaq = lazy(() => import('./features/faq/SlideFaq'))
 
 // Shared inner-wrapper class for non-hero slides:
 // px-10 md:px-16 gives doubled gutters vs. the old px-5 on mobile and generous
@@ -44,9 +45,6 @@ interface SlideDef extends SlideMeta {
   innerClass: string
   content: React.ReactNode
 }
-
-// Shared styling for the fixed wallet button (connect + connected states)
-const CONNECT_BUTTON_CLASS = '!bg-ohnahji-gold !text-ohnahji-black !border-[4px] !border-ohnahji-black !rounded-xl !font-black !text-xs !px-3 !py-1.5 !h-auto !shadow-neo-sm !border-solid hover:!shadow-none hover:!translate-x-[2px] hover:!translate-y-[2px] !transition-all'
 
 const AppContent = () => {
   const location = useLocation()
@@ -78,6 +76,7 @@ const AppContent = () => {
       '/quotes': <SlideQuotesFeed />,
       '/socials': <Slide8Socials />,
       '/muralith': <SlideMuralith />,
+      '/faq': <SlideFaq />,
       '/exchangent': <SlideExchangent />,
       '/vault': <SlideVaultLocker />,
       '/firstlook': <SlideFirstLook />,
@@ -258,40 +257,21 @@ const AppContent = () => {
         <motion.div className="h-full bg-ohnahji-gold" style={{ width: progressWidth }} />
       </div>
 
-      {/* Persistent MINT + wallet buttons; hidden while the genesis gallery
-          overlay is open. The fixed row is offset by the top/right
-          safe-area insets and sized to fit a 390px phone viewport. */}
-      {!isGalleryOpen && (
-        <div
-          className="fixed top-3 right-3 z-[90] flex items-start gap-2"
-          style={{
-            top: 'calc(0.75rem + env(safe-area-inset-top))',
-            right: 'calc(0.75rem + env(safe-area-inset-right))',
-          }}
-        >
-          {siteConfig.features.mintPill && (
-            <button
-              onClick={() => navigate('/mint')}
-              className="bg-ohnahji-pink text-ohnahji-white border-[4px] border-ohnahji-black rounded-xl font-black text-xs px-3 py-2 shadow-neo-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-              aria-label="Go to the mint slide"
-            >
-              MINT
-            </button>
-          )}
-          <ConnectButton
-            client={client}
-            chain={chain}
-            theme={OHNAHJI_WALLET_THEME}
-            connectButton={{
-              label: 'CONNECT',
-              className: CONNECT_BUTTON_CLASS,
-            }}
-            detailsButton={{
-              className: CONNECT_BUTTON_CLASS,
-            }}
-          />
-        </div>
-      )}
+      {/* Slim sitewide header: logo, slide-index menu, key links, MINT,
+          and wallet, in one row. Hidden while the genesis gallery
+          overlay is open. See src/components/SiteHeader.tsx. */}
+      <SiteHeader
+        slideNames={slideNames}
+        slidePaths={slidePaths}
+        currentSlide={currentSlide}
+        onSlideChange={onSlideChange}
+        onHome={() => navigate('/')}
+        onMint={() => navigate('/mint')}
+        showMint={siteConfig.features.mintPill}
+        isGalleryOpen={isGalleryOpen}
+        client={client}
+        chain={chain}
+      />
 
       {/* The dock floats over the full-bleed viewport (Part 8). The
           wrapper and the component root pass clicks through; only the
