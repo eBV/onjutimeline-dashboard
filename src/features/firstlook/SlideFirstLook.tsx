@@ -93,6 +93,17 @@ const SlideFirstLook = () => {
           frameTitle="Four Corners Campus (Dakar build), three.js"
           index={1}
         />
+        {/* Trailing room (2026-10-27), same mechanism as the Exchangent
+            slide: measured before this change, the campus frame bottom
+            sat 46px below the dock top at desktop at max outer scroll
+            (mobile already cleared by 126px). Measured after this
+            change: campus frame 110px above the dock at desktop and
+            unchanged 126px above it at mobile at max scroll. The room
+            is kept at all widths so both slides behave the same and
+            the last panel never kisses the dock. A real trailing flex
+            item, not padding, because Chrome ignores trailing padding
+            for scrollable overflow on column flex scrollers. */}
+        <div aria-hidden="true" className="flex-none h-40" />
       </div>
     </div>
   )

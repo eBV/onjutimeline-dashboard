@@ -67,6 +67,21 @@ const SlideExchangent = () => {
             />
           </div>
         </motion.section>
+        {/* Trailing room (2026-10-27): the iframe slide's end sits behind
+            the dock without it. Measured before this change: at max outer
+            scroll the frame bottom sat 24px below the dock top at 390px
+            and 46px below it at desktop. The shared scroller spacer is
+            mobile-only, so desktop has no equivalent room at all, and on
+            mobile it leaves this slide 24px short. A real trailing flex
+            item is what Chrome honors for scrollable overflow (the
+            wave's padding-bottom lesson). Measured after this change:
+            frame bottom 62px above the dock at 390px and 134px above it
+            at desktop at max scroll (the mobile lift is 86px, not the
+            full 160px, because the flex-1 section gives some space back).
+            It runs at all widths because the desktop deficit is real
+            too. The vendored explainer files are untouched; the room
+            lives on the slide layer. */}
+        <div aria-hidden="true" className="flex-none h-40" />
       </div>
     </div>
   )
