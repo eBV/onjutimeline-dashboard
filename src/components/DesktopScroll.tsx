@@ -1,24 +1,26 @@
 import React, { Suspense, useCallback, useEffect, useRef } from 'react'
 import type { MotionValue } from 'framer-motion'
 import { desktopTintAt } from '../lib/tint'
+import DesktopSideNav from './DesktopSideNav'
 
 // Large-desktop layout only (min-width 1280px; see App.tsx). The mobile
 // and tablet deck is untouched: this component renders instead of the
 // horizontal snap pager, never alongside it.
 //
-// Layout: a fixed left rail with the section names and a gold active
-// indicator, plus a traditional vertical scroller holding one section
-// per slide. Sections flow at natural height (min one viewport tall),
-// so long sections (FAQ, Quotes) read like a normal page. The rail
-// lists exactly the sections passed in, which App derives from the
-// visible deck: gated sections are absent for visitors, About is
-// absent for everyone, Story stays hidden.
+// Layout: the bottom dock rotated 90 degrees onto the left edge (see
+// DesktopSideNav: gold pill, dots, sideways active label, fixed so it
+// stays put while the page scrolls), plus a traditional vertical
+// scroller holding one section per slide. Sections flow at natural
+// height (min one viewport tall), so long sections (FAQ, Quotes) read
+// like a normal page. The side nav lists exactly the sections passed
+// in, which App derives from the visible deck: gated sections are
+// absent for visitors, About is absent for everyone, Story stays hidden.
 //
 // Scrollspy: on scroll, the active section is the last one whose top
 // has crossed 160px below the container top (below the fixed header).
 // A scroll-driven change reports through onScrollSection, which only
 // replaces the URL; it never scrolls back, so the page cannot fight
-// the user's scroll. A navigation-driven change (rail click, header
+// the user's scroll. A navigation-driven change (side nav click, header
 // menu, deep link) scrolls the container to the section instead, with
 // the same long-jump snap and retry pattern the mobile deck uses.
 // While a programmatic scroll is in flight, scrollspy stays quiet so
@@ -217,39 +219,15 @@ const DesktopScroll = ({
 
   return (
     <div className="h-full w-full flex">
-      {/* Left rail: solid black so names stay readable over every tint.
-          The gold bar marks the section in view; inactive rows are
-          white at reduced emphasis. */}
-      <nav
-        aria-label="Site sections"
-        className="hidden xl:flex w-60 shrink-0 h-full flex-col bg-ohnahji-black overflow-y-auto pt-24 pb-16 px-3"
-      >
-        <p className="font-black text-[11px] tracking-[0.2em] text-ohnahji-gold/70 px-3 pb-3">
-          SECTIONS
-        </p>
-        {sections.map((section, i) => {
-          const active = i === currentSlide
-          return (
-            <button
-              key={section.path}
-              type="button"
-              aria-current={active ? 'true' : undefined}
-              onClick={() => onSectionChange(i)}
-              className={`relative w-full text-left font-black text-sm px-3 py-2.5 rounded-xl transition-colors ${
-                active ? 'text-ohnahji-gold' : 'text-white/80 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              {active && (
-                <span
-                  aria-hidden="true"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1.5 rounded-full bg-ohnahji-gold"
-                />
-              )}
-              {section.name}
-            </button>
-          )
-        })}
-      </nav>
+      {/* Desktop nav: the dock rotated onto the left edge. Fixed to the
+          viewport and vertically centered, so it stays put while the
+          scroller's inner container scrolls. Section content keeps a
+          wide left pad (xl:pl-28) so nothing slides under the bar. */}
+      <DesktopSideNav
+        slideNames={sections.map((section) => section.name)}
+        currentSlide={currentSlide}
+        onSlideChange={onSectionChange}
+      />
 
       <div ref={containerRef} className="flex-1 h-full overflow-y-auto desktop-scroll-container">
         {sections.map((section, i) => (
@@ -264,7 +242,7 @@ const DesktopScroll = ({
               section.weight ? ({ '--slide-weight': section.weight } as React.CSSProperties) : undefined
             }
           >
-            <div className="flex-1 flex flex-col px-10 xl:px-16">
+            <div className="flex-1 flex flex-col px-10 xl:px-16 xl:pl-28">
               <Suspense
                 fallback={
                   <div className="flex-1 flex items-center justify-center text-white font-black">
