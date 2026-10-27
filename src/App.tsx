@@ -52,7 +52,7 @@ interface SlideDef extends SlideMeta {
 // Large desktop starts at 1280px (Tailwind xl). Phones and every
 // standard tablet stay on the deck: tablets top out at 1180px CSS
 // width in landscape (iPad Air), so only true laptop and desktop
-// viewports get the vertical scroller and left rail. The one edge
+// viewports get the vertical scroller and left side nav. The one edge
 // case is the 12.9-inch iPad Pro in landscape (1366px), which takes
 // the scroller; on a screen that size it reads like a laptop page,
 // and the scroller works with touch exactly as with a mouse.
@@ -233,7 +233,7 @@ const AppContent = () => {
 
   // Desktop scrollspy: a scroll-driven section change only replaces the
   // URL, so the location effect can settle currentSlide without the
-  // scroller scrolling back. Navigation-driven changes (rail clicks,
+  // scroller scrolling back. Navigation-driven changes (side nav clicks,
   // header menu, deep links) go through onSlideChange instead.
   const onScrollSection = useCallback(
     (index: number) => {
@@ -345,7 +345,7 @@ const AppContent = () => {
           dock pill assembly itself takes them, so content scrolling
           beneath the transparent parts of the footer zone stays
           reachable and the dock never loses a tap to a card under it.
-          Mobile and tablet only: on large desktop the left rail
+          Mobile and tablet only: on large desktop the left side nav
           replaces the dock. */}
       {!isDesktop && (
         <div className="absolute bottom-0 left-0 right-0 z-50 pointer-events-none">
