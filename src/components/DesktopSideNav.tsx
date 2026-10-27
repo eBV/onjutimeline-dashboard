@@ -12,12 +12,12 @@ interface DesktopSideNavProps {
 // navigation design. It reuses the dock's own pieces verbatim: the gold
 // pill (bg-ohnahji-gold, 6px black border, neo shadow), the burgundy
 // dots with a white scaled active dot, and the black nameplate with
-// gold text, here set sideways with vertical writing mode so it reads
-// along the bar. Like the dock, only the active section gets a label;
-// the other sections are dots only, so the bar stays narrow and never
-// turns back into a full-name rail. The bar is fixed to the viewport's
-// left edge and vertically centered, so it stays put while the desktop
-// scroller's inner container scrolls beneath it.
+// gold text, here set horizontal beside the active dot so it reads
+// normally left to right. Like the dock, only the active section gets
+// a label; the other sections are dots only, so the bar stays narrow
+// and never turns back into a full-name rail. The bar is fixed to the
+// viewport's left edge and vertically centered, so it stays put while
+// the desktop scroller's inner container scrolls beneath it.
 const DesktopSideNav = ({ slideNames, currentSlide, onSlideChange }: DesktopSideNavProps) => {
   return (
     <nav
@@ -48,12 +48,13 @@ const DesktopSideNav = ({ slideNames, currentSlide, onSlideChange }: DesktopSide
                   active ? 'bg-ohnahji-white scale-110' : 'bg-ohnahji-burgundy'
                 }`}
               />
-              {/* Active-section label only, sideways along the bar. The
-                  chip reuses the dock nameplate's black/gold treatment;
-                  it is decorative and aria-hidden because the button's
-                  aria-label already names the destination. It remounts
-                  per section (key={currentSlide}) so the fade replays on
-                  every change, exactly like the dock nameplate. */}
+              {/* Active-section label only, horizontal beside the dot so
+                  it reads normally left to right. The chip reuses the
+                  dock nameplate's black/gold treatment; it is decorative
+                  and aria-hidden because the button's aria-label already
+                  names the destination. It remounts per section
+                  (key={currentSlide}) so the fade replays on every
+                  change, exactly like the dock nameplate. */}
               {active && (
                 <motion.span
                   key={currentSlide}
@@ -61,7 +62,7 @@ const DesktopSideNav = ({ slideNames, currentSlide, onSlideChange }: DesktopSide
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.25, ease: 'easeOut' }}
                   aria-hidden="true"
-                  className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-ohnahji-black text-ohnahji-gold text-[10px] font-black px-3 py-1 rounded-full border-2 border-ohnahji-black shadow-neo-sm whitespace-nowrap [writing-mode:vertical-rl] pointer-events-none"
+                  className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-ohnahji-black text-ohnahji-gold text-[10px] font-black px-3 py-1 rounded-full border-2 border-ohnahji-black shadow-neo-sm whitespace-nowrap pointer-events-none"
                 >
                   {name}
                 </motion.span>

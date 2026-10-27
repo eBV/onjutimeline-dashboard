@@ -222,7 +222,9 @@ const DesktopScroll = ({
       {/* Desktop nav: the dock rotated onto the left edge. Fixed to the
           viewport and vertically centered, so it stays put while the
           scroller's inner container scrolls. Section content keeps a
-          wide left pad (xl:pl-28) so nothing slides under the bar. */}
+          wide left pad (xl:pl-48) so nothing slides under the bar or
+          under the horizontal active label pill, whose right edge
+          reaches about 154px for the longest holder labels. */}
       <DesktopSideNav
         slideNames={sections.map((section) => section.name)}
         currentSlide={currentSlide}
@@ -242,7 +244,7 @@ const DesktopScroll = ({
               section.weight ? ({ '--slide-weight': section.weight } as React.CSSProperties) : undefined
             }
           >
-            <div className="flex-1 flex flex-col px-10 xl:px-16 xl:pl-28">
+            <div className="flex-1 flex flex-col px-10 xl:px-16 xl:pl-48">
               <Suspense
                 fallback={
                   <div className="flex-1 flex items-center justify-center text-white font-black">
