@@ -1,13 +1,16 @@
 import React, { Suspense, lazy, useEffect, useCallback, useMemo, useState } from 'react'
-import { motion, useTransform, useMotionValueEvent } from 'framer-motion'
+import { motion, useMotionValue, useMotionValueEvent, useTransform } from 'framer-motion'
 import { BrowserRouter as Router, useLocation, useNavigate } from 'react-router-dom'
 import { ThirdwebProvider } from 'thirdweb/react'
 import SiteHeader from './components/SiteHeader'
+import DesktopScroll from './components/DesktopScroll'
 import './index.css'
 
 import { StoreProvider, useStore } from './hooks/useStore'
 import { HolderProvider, useHolderStatus } from './hooks/useHolderStatus'
 import { useSlideScroll } from './hooks/useSlideScroll'
+import { useMediaQuery } from './hooks/useMediaQuery'
+import { tintAt, tintStops } from './lib/tint'
 import NavigationDots from './components/NavigationDots'
 import { initAutoHideScrollbars } from './lib/autoHideScrollbars'
 import { visibleSlides, gateSatisfied, SlideMeta } from './lib/deck'
@@ -45,6 +48,15 @@ interface SlideDef extends SlideMeta {
   innerClass: string
   content: React.ReactNode
 }
+
+// Large desktop starts at 1280px (Tailwind xl). Phones and every
+// standard tablet stay on the deck: tablets top out at 1180px CSS
+// width in landscape (iPad Air), so only true laptop and desktop
+// viewports get the vertical scroller and left rail. The one edge
+// case is the 12.9-inch iPad Pro in landscape (1366px), which takes
+// the scroller; on a screen that size it reads like a laptop page,
+// and the scroller works with touch exactly as with a mouse.
+const DESKTOP_QUERY = '(min-width: 1280px)'
 
 const AppContent = () => {
   const location = useLocation()
@@ -112,28 +124,59 @@ const AppContent = () => {
   const slideHex = useMemo(() => slides.map((s) => s.hex), [slides])
   const slideNames = useMemo(() => slides.map((s) => s.name), [slides])
 
-  const { containerRef, scrollProgress } = useSlideScroll({ slidePaths, currentSlide, isGalleryOpen, navigate })
-  const progressWidth = useTransform(scrollProgress, [0, 1], ['0%', '100%'])
+  const isDesktop = useMediaQuery(DESKTOP_QUERY)
 
-  // Continuous chrome tint. scrollProgress runs 0..1 across the whole deck,
-  // so stop i/(n-1) is exactly slide i fully in view; interpolating the
-  // visible deck's colours over those stops yields the outgoing colour,
-  // the incoming colour, or the exact blend between them mid-swipe. The
-  // stops recompute whenever the deck grows or shrinks.
-  const chromeColor = useTransform(
-    scrollProgress,
-    slideHex.map((_, i) => i / (slideHex.length - 1)),
-    slideHex,
-  )
+  // The mobile deck owns its scroll progress; the desktop scroller
+  // writes its own. Only the active layout's hook is enabled, so the
+  // two can never fight over the same container.
+  const { containerRef, scrollProgress } = useSlideScroll({
+    slidePaths,
+    currentSlide,
+    isGalleryOpen,
+    navigate,
+    enabled: !isDesktop,
+  })
+  const desktopProgress = useMotionValue(0)
+
+  // Uniform dissolve tint (see src/lib/tint.ts). One interpolated
+  // value paints the full-viewport shell behind the content on BOTH
+  // layouts, and the slide panels are transparent, so the main page
+  // areas dissolve exactly like the header and footer chrome used to:
+  // no solid panel colour ever cuts at a boundary. On mobile the
+  // stops are index fractions i/(n-1), so at a settled slide the tint
+  // is bit-exact that slide's hex and the settled look is unchanged
+  // from before. On desktop the stops are the sections' activation
+  // scroll positions (same hexes, same order), since sections have
+  // unequal heights; outside each boundary's blend window the tint
+  // sits exactly on the section in view's hex. The value is a motion
+  // value, so every scroll frame repaints without re-rendering.
+  // While the Genesis gallery overlay is open the tint is maroon, the
+  // same rule the shell and theme-color already followed.
+  const tint = useMotionValue(slideHex[0] ?? '#3C0010')
+  const barProgress = useMotionValue(0)
+  const progressWidth = useTransform(barProgress, [0, 1], ['0%', '100%'])
+  const stops = useMemo(() => tintStops(slideHex.length), [slideHex.length])
+  useEffect(() => {
+    const source = isDesktop ? desktopProgress : scrollProgress
+    const update = (v: number) => {
+      barProgress.set(v)
+      // Mobile owns the tint through index-fraction stops; on desktop
+      // DesktopScroll owns it through section-anchored stops, so this
+      // effect must not write it there or the two would fight.
+      if (!isDesktop) tint.set(isGalleryOpen ? '#3C0010' : tintAt(stops, slideHex, v))
+    }
+    update(source.get())
+    return source.on('change', update)
+  }, [isDesktop, desktopProgress, scrollProgress, stops, slideHex, isGalleryOpen, barProgress, tint])
 
   // The body paints behind the shell (overscroll and browser-chrome blend
   // areas); keep it on the same interpolated colour every scroll frame.
-  useMotionValueEvent(chromeColor, 'change', (value) => {
+  useMotionValueEvent(tint, 'change', (value) => {
     document.body.style.backgroundColor = value
   })
   useEffect(() => {
-    document.body.style.backgroundColor = chromeColor.get()
-  }, [chromeColor])
+    document.body.style.backgroundColor = tint.get()
+  }, [tint])
 
   // Sync URL path to slide index. Paths outside the visible deck fall back
   // to home: a gated deep link (/vault, /firstlook) lands on / unless the
@@ -172,10 +215,8 @@ const AppContent = () => {
   }, [location.pathname, slidePaths, currentSlide, isPending, graceOver, navigate, setCurrentSlide, siteConfig, isConnected, isHolder])
 
   // Keep the browser's own chrome tint (theme-color meta) on the settled
-  // slide's colour. The body background is set here too as a backstop
-  // (Part 5): on an index change it snaps to the active slide's hex, so
-  // the paint behind the shell can never sit on the default white while
-  // the interpolated tint catches up after a deck change. While the
+  // slide's colour. The body background now follows the interpolated
+  // tint continuously (above), so it no longer snaps here. While the
   // Genesis gallery overlay is open, every layer goes maroon: the
   // overlay itself is maroon, but the body behind it (which shows
   // through a translucent Android nav bar at the viewport bottom) and
@@ -184,12 +225,24 @@ const AppContent = () => {
   useEffect(() => {
     const hex = isGalleryOpen ? '#3C0010' : (slideHex[currentSlide] ?? slideHex[0])
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', hex)
-    if (hex) document.body.style.backgroundColor = hex
   }, [currentSlide, slideHex, isGalleryOpen])
 
   const onSlideChange = useCallback((index: number) => {
     if (slidePaths[index]) navigate(slidePaths[index])
   }, [navigate, slidePaths])
+
+  // Desktop scrollspy: a scroll-driven section change only replaces the
+  // URL, so the location effect can settle currentSlide without the
+  // scroller scrolling back. Navigation-driven changes (rail clicks,
+  // header menu, deep links) go through onSlideChange instead.
+  const onScrollSection = useCallback(
+    (index: number) => {
+      if (slidePaths[index] && slidePaths[index] !== location.pathname) {
+        navigate(slidePaths[index], { replace: true })
+      }
+    },
+    [navigate, slidePaths, location.pathname],
+  )
 
   return (
     // h-app-shell declares 100vh before 100dvh, so older iOS gets a valid
@@ -199,15 +252,18 @@ const AppContent = () => {
     // The shell background paints through its safe-area padding, so the area
     // behind the status bar and landscape notch stays on the slide colour
     // while the header strip itself starts inside the safe area.
-    // backgroundColor is the continuously interpolated chromeColor (no CSS
+    // backgroundColor is the continuously interpolated tint (no CSS
     // transition on it: framer already updates it every scroll frame, and a
-    // transition would smear that behind the swipe).
+    // transition would smear that behind the swipe). The shell is the
+    // single full-viewport background layer on both layouts; the slide
+    // panels and desktop sections are transparent, so the tint is the
+    // page background everywhere and no boundary ever cuts.
     <motion.div
       className="h-app-shell w-full relative overflow-hidden"
       style={{
         // Maroon shell while the gallery overlay is open (see the
         // theme-color effect above); otherwise the interpolated tint.
-        backgroundColor: isGalleryOpen ? '#3C0010' : chromeColor,
+        backgroundColor: isGalleryOpen ? '#3C0010' : tint,
         paddingTop: 'env(safe-area-inset-top)',
         paddingLeft: 'env(safe-area-inset-left)',
         paddingRight: 'env(safe-area-inset-right)',
@@ -216,41 +272,52 @@ const AppContent = () => {
       {/* Layer order, back to front (Part 8): the shell tint; the slide
           viewport, full-bleed across the whole shell height so content
           scrolls OVER the tint; then the chrome (progress strip, the
-          fixed MINT/wallet row, the nav dock) floating above content.
+          fixed header row, the nav dock on mobile) floating above content.
           The header and footer no longer exist as layout bands, so
           nothing clips content at a band boundary any more. */}
       <div className="absolute inset-0 overflow-hidden">
-        <div
-          ref={containerRef}
-          className="h-full w-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar"
-        >
-          {slides.map((slide) => (
-            // The inline background is the slide's effective hex (the
-            // site-config override when one is set, the deck default
-            // otherwise). It paints the same colour the shellClass names,
-            // and wins over it when an override differs, so the slide's
-            // full-bleed background always matches the chrome tint.
-            <div
-              key={slide.path}
-              className={`min-w-full h-full snap-start ${slide.shellClass}`}
-              // --slide-weight carries the slide's resolved font weight
-              // (per-slide override, else sitewide) for its header copy;
-              // the .slide-copy rule in index.css reads it. Unset when
-              // there is no override, so the design's own weights rule.
-              style={{
-                backgroundColor: slide.hex,
-                ...(slide.weight ? { '--slide-weight': slide.weight } : {}),
-              } as React.CSSProperties}
-            >
-              {/* Per-slide Suspense: a lazily loaded slide (including the
-                  gated pair appearing on holder connect) never blanks the
-                  rest of the deck while its chunk loads. */}
-              <Suspense fallback={<div className="h-full flex items-center justify-center text-white font-black">LOADING...</div>}>
-                <div className={slide.innerClass}>{slide.content}</div>
-              </Suspense>
-            </div>
-          ))}
-        </div>
+        {isDesktop ? (
+          <DesktopScroll
+            sections={slides}
+            currentSlide={currentSlide}
+            onSectionChange={onSlideChange}
+            onScrollSection={onScrollSection}
+            progress={desktopProgress}
+            tint={tint}
+            hexes={slideHex}
+            galleryOpen={isGalleryOpen}
+          />
+        ) : (
+          <div
+            ref={containerRef}
+            className="h-full w-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar"
+          >
+            {slides.map((slide) => (
+              // Transparent panel: the shell tint behind it is the page
+              // background, so swiping dissolves between slide colours
+              // instead of cutting at the panel edge. shellClass stays
+              // in the deck metadata (tests pin it) but no longer paints.
+              <div
+                key={slide.path}
+                className="min-w-full h-full snap-start"
+                // --slide-weight carries the slide's resolved font weight
+                // (per-slide override, else sitewide) for its header copy;
+                // the .slide-copy rule in index.css reads it. Unset when
+                // there is no override, so the design's own weights rule.
+                style={
+                  slide.weight ? ({ '--slide-weight': slide.weight } as React.CSSProperties) : undefined
+                }
+              >
+                {/* Per-slide Suspense: a lazily loaded slide (including the
+                    gated pair appearing on holder connect) never blanks the
+                    rest of the deck while its chunk loads. */}
+                <Suspense fallback={<div className="h-full flex items-center justify-center text-white font-black">LOADING...</div>}>
+                  <div className={slide.innerClass}>{slide.content}</div>
+                </Suspense>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="absolute top-0 left-0 right-0 h-1 bg-transparent z-50 pointer-events-none">
@@ -277,16 +344,20 @@ const AppContent = () => {
           wrapper and the component root pass clicks through; only the
           dock pill assembly itself takes them, so content scrolling
           beneath the transparent parts of the footer zone stays
-          reachable and the dock never loses a tap to a card under it. */}
-      <div className="absolute bottom-0 left-0 right-0 z-50 pointer-events-none">
-        <NavigationDots
-          totalSlides={slides.length}
-          slideNames={slideNames}
-          isSocials={slides[currentSlide]?.path === '/socials'}
-          currentSlide={currentSlide}
-          onSlideChange={onSlideChange}
-        />
-      </div>
+          reachable and the dock never loses a tap to a card under it.
+          Mobile and tablet only: on large desktop the left rail
+          replaces the dock. */}
+      {!isDesktop && (
+        <div className="absolute bottom-0 left-0 right-0 z-50 pointer-events-none">
+          <NavigationDots
+            totalSlides={slides.length}
+            slideNames={slideNames}
+            isSocials={slides[currentSlide]?.path === '/socials'}
+            currentSlide={currentSlide}
+            onSlideChange={onSlideChange}
+          />
+        </div>
+      )}
     </motion.div>
   )
 }
