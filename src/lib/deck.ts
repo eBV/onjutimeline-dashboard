@@ -45,6 +45,9 @@ export const BASE_SLIDES: SlideMeta[] = [
   // sign-in gated (any wallet), not holder gated.
   { path: '/quotes', name: 'QUOTES', hex: '#FE517E', shellClass: 'bg-ohnahji-pink' },
   { path: '/socials', name: 'SOCIALS', hex: '#F1C40F', shellClass: 'bg-ohnahji-gold' },
+  // FAQ: its own reference tab. Public, after Socials, as the last
+  // stop before the mint and holder sections.
+  { path: '/faq', name: 'FAQ', hex: '#FE517E', shellClass: 'bg-ohnahji-pink' },
   // Muralith: native Highlight mint tab. Public, after Socials and
   // before the gated pair appends, so base indexes never shift.
   { path: '/muralith', name: 'MURALITH', hex: '#FE517E', shellClass: 'bg-ohnahji-pink' },

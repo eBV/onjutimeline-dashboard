@@ -113,6 +113,10 @@ export const DEFAULT_COPY: Record<string, SlideCopy> = {
     heading: 'Join the community',
     paragraph: 'Follow us across the web and stay updated on the latest in emerging tech.',
   },
+  '/faq': {
+    heading: 'Questions,\nanswered',
+    paragraph: 'Everything a new visitor asks, answered in one place.',
+  },
   '/muralith': {
     heading: 'Muralith\nmint',
     paragraph: 'Muralith by Ohnahji crops a single deterministic window from an endless wall where strobe, bass pressure and torn flyers have sedimented into plaster. No two cuts are alike; each is sealed by its mint hash and ranked on a true percentile scale, so the top stays the top forever.',
