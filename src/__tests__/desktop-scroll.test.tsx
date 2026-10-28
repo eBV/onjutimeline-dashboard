@@ -73,10 +73,13 @@ describe('DesktopScroll side nav', () => {
     expect(nav.className).not.toContain('bg-ohnahji-black')
   })
 
-  test('only the active section gets a sideways label', () => {
+  test('only the active section gets a horizontal label that reads normally', () => {
     const { container } = renderNav(1)
-    const sideways = container.querySelectorAll('.\\[writing-mode\\:vertical-rl\\]')
-    expect(sideways).toHaveLength(1)
-    expect(sideways[0]).toHaveTextContent('GENESIS')
+    expect(container.querySelectorAll('.\\[writing-mode\\:vertical-rl\\]')).toHaveLength(0)
+    const pill = screen.getByRole('button', { name: /GENESIS/i }).querySelector('span[aria-hidden="true"]')
+    expect(pill).not.toBeNull()
+    expect(pill).toHaveTextContent('GENESIS')
+    expect(pill?.className).toContain('left-full')
+    expect(pill?.className).not.toContain('vertical-rl')
   })
 })
