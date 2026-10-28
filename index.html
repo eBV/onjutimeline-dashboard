@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#3C0010" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#3C0010" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
   <title>OHNAHJI | Web3's First HBCU</title>
   <meta name="description"
     content="Ohnahji & Ohnahji University (ONJU) Visual Timeline - A journey through NFT history, HBCU education, and generative art" />
@@ -21,6 +22,21 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="OHNAHJI" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" media="(prefers-color-scheme: dark)" href="/apple-touch-icon-dark.png" />
+  <script>
+    // iOS captures the touch icon at add-to-home-screen time, so mirror the
+    // system theme onto the icon link at load and whenever it changes.
+    (function () {
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
+      function sync() {
+        var link = document.querySelector('link[rel="apple-touch-icon"]:not([media])');
+        if (link) link.href = mq.matches ? '/apple-touch-icon-dark.png' : '/apple-touch-icon.png';
+      }
+      sync();
+      if (mq.addEventListener) mq.addEventListener('change', sync);
+      else if (mq.addListener) mq.addListener(sync);
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
