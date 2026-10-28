@@ -8,8 +8,8 @@ import DesktopSideNav from './DesktopSideNav'
 // horizontal snap pager, never alongside it.
 //
 // Layout: the bottom dock rotated 90 degrees onto the left edge (see
-// DesktopSideNav: gold pill, dots, horizontal active label, hover
-// menu, fixed so it stays put while the page scrolls), plus a
+// DesktopSideNav: gold pill, dots, horizontal active label, hover-only
+// expanding tray, fixed so it stays put while the page scrolls), plus a
 // traditional vertical scroller holding one section per slide.
 // Sections flow at natural
 // height (min one viewport tall), so long sections (FAQ, Quotes) read
