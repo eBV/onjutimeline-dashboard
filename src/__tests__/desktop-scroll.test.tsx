@@ -92,18 +92,55 @@ describe('DesktopScroll side nav', () => {
     expect(genesisPad?.className).toContain('xl:pl-48')
   })
 
-  test('hovering the bar expands a full section menu; a menu click navigates', async () => {
+  test('hovering widens the bar itself into a tray with a label next to every dot; no separate panel', async () => {
+    renderNav(0)
+    const nav = screen.getByRole('navigation', { name: /site sections/i })
+    const pill = nav.querySelector('[role="navigation"]')
+    // Collapsed: exactly one label, the active section's standalone pill.
+    expect(nav.querySelectorAll('span[aria-hidden="true"]')).toHaveLength(1)
+    await userEvent.hover(nav)
+    // Expanded: one tray label per section, inside the gold pill, and
+    // no separate menu panel anywhere.
+    expect(screen.queryByLabelText('Site menu')).not.toBeInTheDocument()
+    const trayLabels = nav.querySelectorAll('span[aria-hidden="true"]')
+    expect(trayLabels).toHaveLength(3)
+    expect(trayLabels[0]).toHaveTextContent('ONJU')
+    expect(trayLabels[1]).toHaveTextContent('GENESIS')
+    expect(trayLabels[2]).toHaveTextContent('FAQ')
+    expect(pill?.className).toContain('overflow-hidden')
+    // The active row's tray label is highlighted on top of the shared
+    // black pill and gold text treatment.
+    expect(trayLabels[0].className).toContain('ring-ohnahji-white')
+  })
+
+  test('tray container uses the regular rounded-2xl corners, not a pill, in both states', async () => {
+    renderNav(0)
+    const nav = screen.getByRole('navigation', { name: /site sections/i })
+    const pill = nav.querySelector('[role="navigation"]')
+    expect(pill?.className).toContain('rounded-2xl')
+    expect(pill?.className).not.toContain('rounded-full')
+    await userEvent.hover(nav)
+    expect(pill?.className).toContain('rounded-2xl')
+    expect(pill?.className).not.toContain('rounded-full')
+  })
+
+  test('a tray label click navigates', async () => {
     const onSectionChange = vi.fn()
     renderNav(0, onSectionChange)
     const nav = screen.getByRole('navigation', { name: /site sections/i })
-    expect(screen.queryByLabelText('Site menu')).not.toBeInTheDocument()
     await userEvent.hover(nav)
-    const menu = screen.getByLabelText('Site menu')
-    expect(menu).toBeInTheDocument()
-    expect(menu.textContent).toContain('ONJU')
-    expect(menu.textContent).toContain('GENESIS')
-    expect(menu.textContent).toContain('FAQ')
-    await userEvent.click(screen.getByRole('button', { name: 'FAQ' }))
+    await userEvent.click(screen.getByRole('button', { name: /FAQ/ }))
     expect(onSectionChange).toHaveBeenCalledWith(2)
+  })
+
+  test('hover-out collapses the tray back to the single active label', async () => {
+    renderNav(1)
+    const navEl = screen.getByRole('navigation', { name: /site sections/i })
+    await userEvent.hover(navEl)
+    expect(navEl.querySelectorAll('span[aria-hidden="true"]')).toHaveLength(3)
+    await userEvent.unhover(navEl)
+    const labels = navEl.querySelectorAll('span[aria-hidden="true"]')
+    expect(labels).toHaveLength(1)
+    expect(labels[0]).toHaveTextContent('GENESIS')
   })
 })
