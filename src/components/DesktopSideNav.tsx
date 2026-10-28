@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 
 interface DesktopSideNavProps {
   // Names come from the visible deck in App: the deck is dynamic (gated
@@ -18,58 +19,130 @@ interface DesktopSideNavProps {
 // and never turns back into a full-name rail. The bar is fixed to the
 // viewport's left edge and vertically centered, so it stays put while
 // the desktop scroller's inner container scrolls beneath it.
+//
+// Hover menu (desktop only; this component never renders below xl):
+// hovering the whole bar expands a full section menu beside the pill,
+// with the same S-curve framer-motion easing the site already uses
+// (easeInOut, the hero and dock pulse easing). The panel lists exactly
+// the entitled sections passed in, the active one highlighted, and a
+// click navigates exactly like a dot click. While the menu is open the
+// single active label pill hides, since the menu names every section.
+// On touch-capable desktop widths hover is unreachable, so a first tap
+// on a dot expands the menu instead of navigating, and a tap on a
+// menu item (or on the pill background) navigates or collapses; the
+// hover handlers stay off on touch so a tap never fights a hover.
 const DesktopSideNav = ({ slideNames, currentSlide, onSlideChange }: DesktopSideNavProps) => {
+  const [expanded, setExpanded] = useState(false)
+  const isTouch = useMemo(
+    () =>
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(pointer: coarse)').matches,
+    [],
+  )
+
+  const handleDotClick = (index: number) => {
+    if (isTouch && !expanded) {
+      setExpanded(true)
+      return
+    }
+    onSlideChange(index)
+    if (isTouch) setExpanded(false)
+  }
+
   return (
     <nav
       aria-label="Site sections"
       className="hidden xl:flex fixed left-4 top-1/2 -translate-y-1/2 z-50"
+      onMouseEnter={isTouch ? undefined : () => setExpanded(true)}
+      onMouseLeave={isTouch ? undefined : () => setExpanded(false)}
     >
-      <div
-        role="navigation"
-        aria-label="Timeline navigation"
-        className="flex flex-col items-center gap-4 px-3 py-5 rounded-full bg-ohnahji-gold border-[6px] border-ohnahji-black shadow-neo"
-      >
-        {slideNames.map((name, index) => {
-          const active = index === currentSlide
-          return (
-            <button
-              key={index}
-              type="button"
-              onClick={() => onSlideChange(index)}
-              style={{ touchAction: 'manipulation' }}
-              className={`group relative flex items-center justify-center transition-all ${
-                active ? 'scale-125' : 'opacity-70 hover:opacity-100'
-              }`}
-              aria-label={`Go to slide ${name}`}
-              aria-current={active ? 'step' : undefined}
-            >
-              <div
-                className={`w-4 h-4 border-2 border-ohnahji-black rounded-full transition-all ${
-                  active ? 'bg-ohnahji-white scale-110' : 'bg-ohnahji-burgundy'
+      <div className="flex items-center">
+        <div
+          role="navigation"
+          aria-label="Timeline navigation"
+          onClick={(e) => {
+            if (isTouch && expanded && e.target === e.currentTarget) setExpanded(false)
+          }}
+          className="flex flex-col items-center gap-4 px-3 py-5 rounded-full bg-ohnahji-gold border-[6px] border-ohnahji-black shadow-neo"
+        >
+          {slideNames.map((name, index) => {
+            const active = index === currentSlide
+            return (
+              <button
+                key={index}
+                type="button"
+                onClick={() => handleDotClick(index)}
+                style={{ touchAction: 'manipulation' }}
+                className={`group relative flex items-center justify-center transition-all ${
+                  active ? 'scale-125' : 'opacity-70 hover:opacity-100'
                 }`}
-              />
-              {/* Active-section label only, horizontal beside the dot so
-                  it reads normally left to right. The chip reuses the
-                  dock nameplate's black/gold treatment; it is decorative
-                  and aria-hidden because the button's aria-label already
-                  names the destination. It remounts per section
-                  (key={currentSlide}) so the fade replays on every
-                  change, exactly like the dock nameplate. */}
-              {active && (
-                <motion.span
-                  key={currentSlide}
-                  initial={{ opacity: 0, scale: 0.7 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
-                  aria-hidden="true"
-                  className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-ohnahji-black text-ohnahji-gold text-[10px] font-black px-3 py-1 rounded-full border-2 border-ohnahji-black shadow-neo-sm whitespace-nowrap pointer-events-none"
+                aria-label={`Go to slide ${name}`}
+                aria-current={active ? 'step' : undefined}
+              >
+                <div
+                  className={`w-4 h-4 border-2 border-ohnahji-black rounded-full transition-all ${
+                    active ? 'bg-ohnahji-white scale-110' : 'bg-ohnahji-burgundy'
+                  }`}
+                />
+                {/* Active-section label only, horizontal beside the dot
+                    so it reads normally left to right. The chip reuses
+                    the dock nameplate's black/gold treatment; it is
+                    decorative and aria-hidden because the button's
+                    aria-label already names the destination. It
+                    remounts per section (key={currentSlide}) so the
+                    fade replays on every change, exactly like the dock
+                    nameplate. Hidden while the hover menu is open,
+                    since the menu already names every section. */}
+                {active && !expanded && (
+                  <motion.span
+                    key={currentSlide}
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    aria-hidden="true"
+                    className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-ohnahji-black text-ohnahji-gold text-[10px] font-black px-3 py-1 rounded-full border-2 border-ohnahji-black shadow-neo-sm whitespace-nowrap pointer-events-none"
+                  >
+                    {name}
+                  </motion.span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        <AnimatePresence>
+          {expanded && (
+            <motion.div
+              key="bar-menu"
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.35, ease: 'easeInOut' }}
+              aria-label="Site menu"
+              className="ml-3 w-56 bg-ohnahji-white border-[4px] border-ohnahji-black rounded-2xl shadow-neo p-2 max-h-[70dvh] overflow-y-auto"
+            >
+              {slideNames.map((name, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => {
+                    onSlideChange(index)
+                    if (isTouch) setExpanded(false)
+                  }}
+                  aria-current={index === currentSlide ? 'step' : undefined}
+                  className={`w-full text-left font-black text-sm px-3 py-2 rounded-xl ${
+                    index === currentSlide
+                      ? 'bg-ohnahji-pink text-ohnahji-white'
+                      : 'text-ohnahji-burgundy hover:bg-ohnahji-gold/30'
+                  }`}
                 >
                   {name}
-                </motion.span>
-              )}
-            </button>
-          )
-        })}
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   )

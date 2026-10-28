@@ -8,9 +8,10 @@ import DesktopSideNav from './DesktopSideNav'
 // horizontal snap pager, never alongside it.
 //
 // Layout: the bottom dock rotated 90 degrees onto the left edge (see
-// DesktopSideNav: gold pill, dots, sideways active label, fixed so it
-// stays put while the page scrolls), plus a traditional vertical
-// scroller holding one section per slide. Sections flow at natural
+// DesktopSideNav: gold pill, dots, horizontal active label, hover
+// menu, fixed so it stays put while the page scrolls), plus a
+// traditional vertical scroller holding one section per slide.
+// Sections flow at natural
 // height (min one viewport tall), so long sections (FAQ, Quotes) read
 // like a normal page. The side nav lists exactly the sections passed
 // in, which App derives from the visible deck: gated sections are
@@ -224,7 +225,10 @@ const DesktopScroll = ({
           scroller's inner container scrolls. Section content keeps a
           wide left pad (xl:pl-48) so nothing slides under the bar or
           under the horizontal active label pill, whose right edge
-          reaches about 154px for the longest holder labels. */}
+          reaches about 154px for the longest holder labels. The hero
+          is exempt from that pad: it keeps symmetric padding so its
+          splash measures centered on the viewport exactly like the
+          phone and tablet deck, where no bar offsets it. */}
       <DesktopSideNav
         slideNames={sections.map((section) => section.name)}
         currentSlide={currentSlide}
@@ -244,7 +248,9 @@ const DesktopScroll = ({
               section.weight ? ({ '--slide-weight': section.weight } as React.CSSProperties) : undefined
             }
           >
-            <div className="flex-1 flex flex-col px-10 xl:px-16 xl:pl-48">
+            <div
+              className={`flex-1 flex flex-col px-10 xl:px-16${section.path === '/' ? '' : ' xl:pl-48'}`}
+            >
               <Suspense
                 fallback={
                   <div className="flex-1 flex items-center justify-center text-white font-black">

@@ -3,13 +3,15 @@ import { ConnectButton } from 'thirdweb/react'
 import { OHNAHJI_WALLET_THEME } from '../lib/walletTheme'
 
 // Slim sitewide header: one row that consolidates what used to float
-// separately (the MINT pill and the wallet button) plus the brand mark
-// and a slide-index menu for jumping. The bottom dock stays the
-// primary nav; this header deliberately does NOT duplicate the full
-// slide list as links. Desktop shows the FAQ link; mobile
-// keeps logo, menu, and Connect, with Mint reachable from the menu.
-// The row is transparent, not a solid band, so no existing slide needs
-// new top spacing: slide content already clears this strip.
+// separately (the MINT pill and the wallet button) plus a pink HOME
+// button and, below desktop sizes, a slide-index menu for jumping.
+// The bottom dock stays the primary nav on phones and tablets, and
+// the left bar on desktop; this header deliberately does NOT
+// duplicate the full slide list as links. Desktop shows the FAQ link
+// and no MENU button, since the left bar's hover menu replaces it;
+// mobile keeps HOME, menu, and Connect, with Mint reachable from the
+// menu. The row is transparent, not a solid band, so no existing
+// slide needs new top spacing: slide content already clears this strip.
 const CONNECT_BUTTON_CLASS = '!bg-ohnahji-gold !text-ohnahji-black !border-[4px] !border-ohnahji-black !rounded-xl !font-black !text-xs !px-3 !py-1.5 !h-auto !shadow-neo-sm !border-solid hover:!shadow-none hover:!translate-x-[2px] hover:!translate-y-[2px] !transition-all'
 
 interface SiteHeaderProps {
@@ -57,16 +59,19 @@ const SiteHeader = ({
             type="button"
             onClick={onHome}
             aria-label="Go home"
-            className="bg-ohnahji-black text-ohnahji-white border-[3px] border-ohnahji-black rounded-xl font-black text-sm px-3 py-1.5 shadow-neo-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="bg-ohnahji-pink text-ohnahji-white border-[3px] border-ohnahji-black rounded-xl font-black text-sm px-3 py-1.5 shadow-neo-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
-            OHNahji
+            HOME
           </button>
+          {/* The slide-index MENU button is hidden on desktop (xl and
+              up), where the left bar's hover menu replaces it; phones
+              and tablets have no left bar, so they keep it. */}
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
             aria-label="Open the slide index"
-            className="bg-ohnahji-white text-ohnahji-burgundy border-[3px] border-ohnahji-black rounded-xl font-black text-xs px-3 py-2 shadow-neo-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="xl:hidden bg-ohnahji-white text-ohnahji-burgundy border-[3px] border-ohnahji-black rounded-xl font-black text-xs px-3 py-2 shadow-neo-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             {menuOpen ? 'CLOSE' : 'MENU'}
           </button>
