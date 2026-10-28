@@ -82,4 +82,28 @@ describe('DesktopScroll side nav', () => {
     expect(pill?.className).toContain('left-full')
     expect(pill?.className).not.toContain('vertical-rl')
   })
+
+  test('the hero section is exempt from the nav left pad; other sections keep it', () => {
+    const { container } = renderNav()
+    const heroPad = container.querySelector('section[data-path="/"] > div')
+    const genesisPad = container.querySelector('section[data-path="/genesis"] > div')
+    expect(heroPad?.className).toContain('xl:px-16')
+    expect(heroPad?.className).not.toContain('xl:pl-48')
+    expect(genesisPad?.className).toContain('xl:pl-48')
+  })
+
+  test('hovering the bar expands a full section menu; a menu click navigates', async () => {
+    const onSectionChange = vi.fn()
+    renderNav(0, onSectionChange)
+    const nav = screen.getByRole('navigation', { name: /site sections/i })
+    expect(screen.queryByLabelText('Site menu')).not.toBeInTheDocument()
+    await userEvent.hover(nav)
+    const menu = screen.getByLabelText('Site menu')
+    expect(menu).toBeInTheDocument()
+    expect(menu.textContent).toContain('ONJU')
+    expect(menu.textContent).toContain('GENESIS')
+    expect(menu.textContent).toContain('FAQ')
+    await userEvent.click(screen.getByRole('button', { name: 'FAQ' }))
+    expect(onSectionChange).toHaveBeenCalledWith(2)
+  })
 })
