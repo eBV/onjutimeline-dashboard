@@ -83,13 +83,16 @@ describe('DesktopScroll side nav', () => {
     expect(pill?.className).not.toContain('vertical-rl')
   })
 
-  test('the hero section is exempt from the nav left pad; other sections keep it', () => {
+  test('non-hero sections use symmetric side pads so content centers on the viewport; the hero keeps its own', () => {
     const { container } = renderNav()
     const heroPad = container.querySelector('section[data-path="/"] > div')
     const genesisPad = container.querySelector('section[data-path="/genesis"] > div')
     expect(heroPad?.className).toContain('xl:px-16')
-    expect(heroPad?.className).not.toContain('xl:pl-48')
-    expect(genesisPad?.className).toContain('xl:pl-48')
+    expect(heroPad?.className).not.toContain('xl:px-52')
+    // Symmetric 208px pads: the content center lands on the viewport
+    // center, while still clearing the 200px fully expanded tray.
+    expect(genesisPad?.className).toContain('xl:px-52')
+    expect(genesisPad?.className).not.toContain('xl:pl-48')
   })
 
   test('the hero section centers its content vertically; other sections flow from the top', () => {

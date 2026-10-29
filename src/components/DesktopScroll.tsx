@@ -224,13 +224,15 @@ const DesktopScroll = ({
     <div className="h-full w-full flex">
       {/* Desktop nav: the dock rotated onto the left edge. Fixed to the
           viewport and vertically centered, so it stays put while the
-          scroller's inner container scrolls. Section content keeps a
-          wide left pad (xl:pl-48) so nothing slides under the bar or
-          under the horizontal active label pill, whose right edge
-          reaches about 154px for the longest holder labels. The hero
-          is exempt from that pad: it keeps symmetric padding so its
-          splash measures centered on the viewport exactly like the
-          phone and tablet deck, where no bar offsets it. */}
+          scroller's inner container scrolls. Section content keeps
+          symmetric 208px side pads (xl:px-52) so its center lands on
+          the viewport center: the old asymmetric pad (192px left,
+          64px right) pushed every non-hero section 64px right of
+          center. 208px still clears the bar in every state: 52px
+          collapsed, ~154-180px for the longest standalone label
+          pills, and 200px with the tray fully expanded on hover.
+          The hero keeps its own symmetric 64px pads, already
+          centered exactly like the phone and tablet deck. */}
       <DesktopSideNav
         slideNames={sections.map((section) => section.name)}
         currentSlide={currentSlide}
@@ -251,7 +253,7 @@ const DesktopScroll = ({
             }
           >
             <div
-              className={`flex-1 flex flex-col px-10 xl:px-16${section.path === '/' ? ' justify-center' : ' xl:pl-48'}`}
+              className={`flex-1 flex flex-col ${section.path === '/' ? 'px-10 xl:px-16 justify-center' : 'px-10 xl:px-52'}`}
             >
               <Suspense
                 fallback={
