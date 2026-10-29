@@ -114,7 +114,12 @@ const SiteHeader = ({
           </motion.button>
         </div>
 
-        <div className="flex items-start gap-2">
+        {/* Center-aligned, not top-aligned: the morph wrapper is taller
+            than its siblings (50px on mobile: 40px icon plus the 5px
+            shadow padding), so top alignment left the wallet icon's
+            center 6px below MENU's. Centering puts the icon, the pill,
+            and the FAQ/MINT buttons on one shared middle line. */}
+        <div className="flex items-center gap-2">
           <motion.div layout transition={HEADER_TRANSITION} className="hidden md:flex items-start gap-2">
             {keyLinks.map((link) => {
               const idx = slidePaths.indexOf(link.path)
