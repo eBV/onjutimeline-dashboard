@@ -92,6 +92,23 @@ describe('DesktopScroll side nav', () => {
     expect(genesisPad?.className).toContain('xl:pl-48')
   })
 
+  test('the hero section centers its content vertically; other sections flow from the top', () => {
+    const { container } = renderNav()
+    const heroPad = container.querySelector('section[data-path="/"] > div')
+    const genesisPad = container.querySelector('section[data-path="/genesis"] > div')
+    expect(heroPad?.className).toContain('justify-center')
+    expect(genesisPad?.className).not.toContain('justify-center')
+  })
+
+  test('every section carries the same vertical breathing room', () => {
+    const { container } = renderNav()
+    const sections = container.querySelectorAll('section[data-path]')
+    expect(sections.length).toBeGreaterThan(1)
+    sections.forEach((section) => {
+      expect(section.className).toContain('py-24')
+    })
+  })
+
   test('hovering widens the bar itself into a tray with a label next to every dot; no separate panel', async () => {
     renderNav(0)
     const nav = screen.getByRole('navigation', { name: /site sections/i })

@@ -13,7 +13,9 @@ import DesktopSideNav from './DesktopSideNav'
 // traditional vertical scroller holding one section per slide.
 // Sections flow at natural
 // height (min one viewport tall), so long sections (FAQ, Quotes) read
-// like a normal page. The side nav lists exactly the sections passed
+// like a normal page, and every section carries uniform 96px top and
+// bottom padding so sections never sit close together: equal breathing
+// room between every page. The side nav lists exactly the sections passed
 // in, which App derives from the visible deck: gated sections are
 // absent for visitors, About is absent for everyone, Story stays hidden.
 //
@@ -243,13 +245,13 @@ const DesktopScroll = ({
             ref={(el) => {
               sectionEls.current[i] = el
             }}
-            className="min-h-dvh flex flex-col"
+            className="min-h-dvh flex flex-col py-24"
             style={
               section.weight ? ({ '--slide-weight': section.weight } as React.CSSProperties) : undefined
             }
           >
             <div
-              className={`flex-1 flex flex-col px-10 xl:px-16${section.path === '/' ? '' : ' xl:pl-48'}`}
+              className={`flex-1 flex flex-col px-10 xl:px-16${section.path === '/' ? ' justify-center' : ' xl:pl-48'}`}
             >
               <Suspense
                 fallback={
