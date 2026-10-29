@@ -110,7 +110,7 @@ const SiteHeader = ({
             aria-label="Go home"
             className="hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
-            <img src="/ji.png" alt="" aria-hidden="true" className="h-[50px] w-auto" />
+            <img src="/ji.png" alt="" aria-hidden="true" className="h-[65px] w-auto" />
           </motion.button>
         </div>
 
@@ -143,7 +143,7 @@ const SiteHeader = ({
           {/* One wallet control, two shapes, one morphing wrapper:
               on mobile it is just the icon, from md up it is the full
               CONNECT pill. Crossing the breakpoint animates the
-              wrapper's width and height (icon 40px to the pill's
+              wrapper's width and height (icon 50px to the pill's
               natural size, and back) while the two contents crossfade
               under overflow-hidden, so the pill visibly grows out of
               the icon instead of cutting. The layoutId shared-element
@@ -152,11 +152,16 @@ const SiteHeader = ({
               this explicit size-plus-fade morph is what actually
               moves. Tapping the icon opens the same connect modal
               when disconnected or the same account details modal
-              when connected. */}
+              when connected. The wrapper carries 5px of padding
+              because the controls' neo shadows (4px down-right
+              offsets) would otherwise be clipped by its
+              overflow-hidden on the right and bottom edges; the
+              icon state's 50px is the 40px button plus that padding
+              on both sides. */}
           <motion.div
-            animate={{ width: isMobile ? 40 : 'auto', height: isMobile ? 40 : 'auto' }}
+            animate={{ width: isMobile ? 50 : 'auto', height: isMobile ? 50 : 'auto' }}
             transition={HEADER_TRANSITION}
-            className="relative overflow-hidden shrink-0"
+            className="relative overflow-hidden shrink-0 p-[5px]"
           >
             <motion.div
               animate={{ opacity: isMobile ? 1 : 0 }}

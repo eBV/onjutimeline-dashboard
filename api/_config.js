@@ -36,7 +36,7 @@ export const HEX_RE = /^#[0-9A-Fa-f]{6}$/
 // pair, in deck order. The admin slide is deliberately absent: it is
 // not part of the public deck config and can never be toggled.
 export const KNOWN_SLIDE_PATHS = [
-  '/', '/story', '/genesis', '/mint', '/community', '/art', '/merch',
+  '/', '/story', '/genesis', '/mint', '/community', '/art',
   '/live', '/lens', '/quotes', '/socials', '/faq', '/muralith', '/exchangent', '/vault', '/firstlook',
 ]
 
@@ -91,10 +91,6 @@ export const DEFAULT_COPY = {
     heading: 'OKOLOTOS & ELEMNTS',
     paragraph: 'Code-based artistic expression',
   },
-  '/merch': {
-    heading: 'Campus Shop',
-    paragraph: 'Rep the first Web3 HBCU. Official Ohnahji U gear from the Campus Shop on Creator Spring.',
-  },
   '/live': {
     heading: 'Livestream era',
     paragraph: 'Watch live on Twitch and YouTube',
@@ -145,7 +141,6 @@ export const DEFAULT_CONFIG = {
     '/mint': { visible: true, hex: '#3C0010', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/mint'] } },
     '/community': { visible: true, hex: '#FE517E', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/community'] } },
     '/art': { visible: true, hex: '#3C0010', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/art'] } },
-    '/merch': { visible: true, hex: '#FFFFFF', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/merch'] } },
     '/live': { visible: true, hex: '#FE517E', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/live'] } },
     '/lens': { visible: true, hex: '#3C0010', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/lens'] } },
     '/quotes': { visible: true, hex: '#FE517E', gate: 'public', weight: null, copy: { ...DEFAULT_COPY['/quotes'] } },

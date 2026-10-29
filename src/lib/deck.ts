@@ -36,7 +36,6 @@ export const BASE_SLIDES: SlideMeta[] = [
   { path: '/mint', name: 'MINT', hex: '#3C0010', shellClass: 'bg-ohnahji-burgundy' },
   { path: '/community', name: 'HBCU', hex: '#FE517E', shellClass: 'bg-ohnahji-pink' },
   { path: '/art', name: 'ART', hex: '#3C0010', shellClass: 'bg-ohnahji-burgundy' },
-  { path: '/merch', name: 'MERCH', hex: '#FFFFFF', shellClass: 'bg-ohnahji-white' },
   { path: '/live', name: 'LIVE', hex: '#FE517E', shellClass: 'bg-ohnahji-pink' },
   // Lens slide background is the brand maroon (was black); the Lens-green
   // accents live inside the slide.

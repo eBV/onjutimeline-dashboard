@@ -11,7 +11,7 @@ vi.mock('framer-motion', () => ({
 
 // Must match src/lib/deck.ts: base deck for everyone, gated pair appended
 // for proven OG holders.
-const BASE_NAMES = ['ONJU', 'STORY', 'GENESIS', 'MINT', 'HBCU', 'ART', 'MERCH', 'LIVE', 'LENS', 'SOCIALS']
+const BASE_NAMES = ['ONJU', 'STORY', 'GENESIS', 'MINT', 'HBCU', 'ART', 'LIVE', 'LENS', 'SOCIALS']
 const HOLDER_NAMES = [...BASE_NAMES, 'VAULT', 'FIRST LOOK']
 
 const renderDots = (names: string[], currentSlide = 0) =>
@@ -28,7 +28,7 @@ const renderDots = (names: string[], currentSlide = 0) =>
 describe('NavigationDots', () => {
   test('renders one button per visible slide (base deck, no holder slides)', () => {
     renderDots(BASE_NAMES)
-    expect(screen.getAllByRole('button')).toHaveLength(10)
+    expect(screen.getAllByRole('button')).toHaveLength(9)
   })
 
   test('base deck has no VAULT or FIRST LOOK buttons', () => {
@@ -37,9 +37,9 @@ describe('NavigationDots', () => {
     expect(screen.queryByRole('button', { name: /FIRST LOOK/i })).not.toBeInTheDocument()
   })
 
-  test('holder deck renders 12 buttons including VAULT and FIRST LOOK', () => {
+  test('holder deck renders 11 buttons including VAULT and FIRST LOOK', () => {
     renderDots(HOLDER_NAMES)
-    expect(screen.getAllByRole('button')).toHaveLength(12)
+    expect(screen.getAllByRole('button')).toHaveLength(11)
     expect(screen.getByRole('button', { name: /VAULT/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /FIRST LOOK/i })).toBeInTheDocument()
   })

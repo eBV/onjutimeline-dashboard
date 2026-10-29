@@ -61,7 +61,7 @@ describe('exchangent slide gating', () => {
 
   test('legacy 14-slide KV config still works and gains exchangent at og defaults', () => {
     for (const merged of [mergeServer(LEGACY_KV_DOC), mergeClient(LEGACY_KV_DOC)]) {
-      expect(merged.order).toHaveLength(16)
+      expect(merged.order).toHaveLength(15)
       expect(merged.order.indexOf('/exchangent')).toBe(merged.order.indexOf('/muralith') + 1)
       expect(merged.slides['/exchangent'].gate).toBe('og')
       expect(merged.slides['/exchangent'].visible).toBe(true)

@@ -93,10 +93,6 @@ export const DEFAULT_COPY: Record<string, SlideCopy> = {
     heading: 'OKOLOTOS & ELEMNTS',
     paragraph: 'Code-based artistic expression',
   },
-  '/merch': {
-    heading: 'Campus Shop',
-    paragraph: 'Rep the first Web3 HBCU. Official Ohnahji U gear from the Campus Shop on Creator Spring.',
-  },
   '/live': {
     heading: 'Livestream era',
     paragraph: 'Watch live on Twitch and YouTube',
