@@ -43,11 +43,19 @@ const useIsMobile = () => {
 // far right, with Mint reachable from the menu. The row is transparent,
 // not a solid band, so no existing slide needs new top spacing: slide
 // content already clears this strip. Motion: the wallet control morphs
-// between icon and pill on the md breakpoint (wrapper width/height
-// animation plus content crossfade under overflow-hidden), header
+// between icon and pill on the md breakpoint (wrapper width
+// animation at fixed height plus content crossfade under
+// overflow-hidden, fast pill fade-out on the shrink path), header
 // items glide when the control changes size (layout props), and the
 // slide-index panel slides and fades in and out.
-const CONNECT_BUTTON_CLASS = '!bg-ohnahji-gold !text-ohnahji-black !border-[4px] !border-ohnahji-black !rounded-xl !font-black !text-xs !px-3 !py-1.5 !h-auto !shadow-neo-sm !border-solid hover:!shadow-none hover:!translate-x-[2px] hover:!translate-y-[2px] !transition-all'
+// The !m-[5px] is the neo shadow room (4px down-right offset) for
+// the pill. It lives on the button, not on the morph wrapper, on
+// purpose: framer-motion measures the wrapper's 'auto' width as its
+// content width, so padding on the animated wrapper made the width
+// tween run 10px low and snap at the end (measured 2026-11-01:
+// 165 to 40, then a jump to 50). With zero padding on the wrapper,
+// content width equals border-box width and the tween is clean.
+const CONNECT_BUTTON_CLASS = '!bg-ohnahji-gold !text-ohnahji-black !border-[4px] !border-ohnahji-black !rounded-xl !font-black !text-xs !px-3 !py-1.5 !h-auto !m-[5px] !shadow-neo-sm !border-solid hover:!shadow-none hover:!translate-x-[2px] hover:!translate-y-[2px] !transition-all'
 
 interface SiteHeaderProps {
   slideNames: string[]
@@ -148,25 +156,39 @@ const SiteHeader = ({
           {/* One wallet control, two shapes, one morphing wrapper:
               on mobile it is just the icon, from md up it is the full
               CONNECT pill. Crossing the breakpoint animates the
-              wrapper's width and height (icon 50px to the pill's
-              natural size, and back) while the two contents crossfade
-              under overflow-hidden, so the pill visibly grows out of
+              wrapper's width (icon 50px to the pill's natural size,
+              and back) while the two contents crossfade under
+              overflow-hidden, so the pill visibly grows out of
               the icon instead of cutting. The layoutId shared-element
               route was tried first and did not animate here: a
               viewport resize cancels the projection transition, so
               this explicit size-plus-fade morph is what actually
               moves. Tapping the icon opens the same connect modal
               when disconnected or the same account details modal
-              when connected. The wrapper carries 5px of padding
-              because the controls' neo shadows (4px down-right
-              offsets) would otherwise be clipped by its
-              overflow-hidden on the right and bottom edges; the
-              icon state's 50px is the 40px button plus that padding
-              on both sides. */}
+              when connected.
+              Shadow room and box model (fixed 2026-11-01): the
+              controls' neo shadows (4px down-right offsets) need
+              5px of room so overflow-hidden does not clip them, but
+              that room must NOT be padding on this animated
+              wrapper. Framer-motion measures 'auto' width as content
+              width, so with p-[5px] the width tween ran 10px low
+              (165 to 40) and snapped to 50 at the end, and the old
+              auto-to-50 height tween dipped to 37-40px mid-shrink,
+              slicing the gold pill's bg and borders. The room now
+              lives in the controls' own margins (m-[5px] on the
+              icon button, !m-[5px] on the pill), the wrapper has
+              zero padding so content width equals border-box width,
+              height is a constant 50px with the pill centered via
+              flex, and the pill fades out fast (0.15s) on the
+              shrink path so it is gone before the box narrows
+              around it. The icon always fits (40px in a 50px box),
+              and the grow path keeps the single 0.35s crossfade,
+              which never clipped because the box only ever reveals
+              more. */}
           <motion.div
-            animate={{ width: isMobile ? 50 : 'auto', height: isMobile ? 50 : 'auto' }}
+            animate={{ width: isMobile ? 50 : 'auto', height: 50 }}
             transition={HEADER_TRANSITION}
-            className="relative overflow-hidden shrink-0 p-[5px]"
+            className="relative overflow-hidden shrink-0 flex items-center"
           >
             <motion.div
               animate={{ opacity: isMobile ? 1 : 0 }}
@@ -178,7 +200,7 @@ const SiteHeader = ({
                 type="button"
                 onClick={handleWalletIcon}
                 aria-label={account ? 'Open wallet details' : 'Connect wallet'}
-                className="relative bg-ohnahji-gold text-ohnahji-black border-[3px] border-ohnahji-black rounded-xl w-10 h-10 flex items-center justify-center shadow-neo-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                className="relative bg-ohnahji-gold text-ohnahji-black border-[3px] border-ohnahji-black rounded-xl w-10 h-10 m-[5px] flex items-center justify-center shadow-neo-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
               >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
@@ -192,8 +214,13 @@ const SiteHeader = ({
             </motion.div>
             <motion.div
               animate={{ opacity: isMobile ? 0 : 1 }}
-              transition={HEADER_TRANSITION}
+              transition={
+                isMobile
+                  ? { duration: 0.15, ease: 'easeInOut' as const }
+                  : HEADER_TRANSITION
+              }
               style={{ pointerEvents: isMobile ? 'none' : 'auto' }}
+              className="shrink-0"
             >
               <ConnectButton
                 client={client}
