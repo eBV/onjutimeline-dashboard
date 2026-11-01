@@ -66,7 +66,14 @@ const Slide0Hero = () => {
       </motion.div>
 
       {/* The toggle is a real control: clicking it advances to the Story
-          slide, same as a dot click or ArrowRight. */}
+          slide, same as a dot click or ArrowRight. On desktop sizes the
+          pill rotates 90 degrees (xl:rotate-90): the desktop page
+          scrolls DOWN, so the dot's travel must read vertically, while
+          smaller screens keep the horizontal pill because the deck
+          swipes side to side there. Rotating the pill carries the
+          dot's motion with it, so the dot starts at the top and
+          slides down. The rotation is visual only; the layout box
+          stays 48x32, so the row around it does not shift. */}
       <button
         type="button"
         onClick={() => navigate('/story')}
@@ -74,7 +81,7 @@ const Slide0Hero = () => {
         className="mt-12 md:mt-2 flex flex-row items-center gap-6 cursor-pointer"
       >
         <p className="text-ohnahji-white font-black text-sm tracking-widest uppercase">Scroll to Explore</p>
-        <div className="w-12 h-8 border-4 border-ohnahji-white rounded-full p-1 relative overflow-hidden flex items-center">
+        <div className="w-12 h-8 border-4 border-ohnahji-white rounded-full p-1 relative overflow-hidden flex items-center xl:rotate-90">
           <motion.div
             animate={{ x: [0, 16, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
