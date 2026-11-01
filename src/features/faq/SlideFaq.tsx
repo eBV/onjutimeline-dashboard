@@ -55,10 +55,20 @@ const SlideFaq = () => {
                           <span className="text-lg md:text-xl font-black text-ohnahji-burgundy leading-snug">
                             {item.q}
                           </span>
+                          {/* Mint stepper treatment (Slide2Mint +/- buttons):
+                              pink bg, 6px black border, neo offset shadow,
+                              hover lift with bigger shadow, active press
+                              into the shadow. The CSS transition is scoped
+                              to translate + box-shadow on purpose:
+                              transition-all would also transition transform
+                              and fight framer-motion's rotate, dulling the
+                              plus-to-X spin. Rotate stays exactly as it was:
+                              0 to 45deg, 0.3s S-curve. Size stays 32px so
+                              FAQ rows do not shift. */}
                           <motion.span
                             animate={{ rotate: open ? 45 : 0 }}
                             transition={{ duration: 0.3, ease: 'easeInOut' }}
-                            className="flex-none w-8 h-8 flex items-center justify-center rounded-full bg-ohnahji-pink text-ohnahji-white text-xl font-black leading-none"
+                            className="flex-none w-8 h-8 flex items-center justify-center rounded-full bg-ohnahji-pink text-ohnahji-white border-[6px] border-ohnahji-black shadow-neo text-xl font-black leading-none hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo-lg active:translate-x-[2px] active:translate-y-[2px] active:shadow-neo-active transition-[translate,box-shadow] duration-150"
                             aria-hidden="true"
                           >
                             +
